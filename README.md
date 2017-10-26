@@ -6,7 +6,21 @@ The ESP12E measures the temperature and humidity with a DHT 22 sensor and sends 
 
 ## Hardware
 
-The hardware design can be found on <https://www.vogt.or.at/hardware/temperaturesensor>.
+The hardware design with a step by step instruction can be found on <https://www.vogt.or.at/hardware/temperaturesensor>.
+
+[Fritzing schematics](plans/Temperatursensor.fzz)
+
+Top side:
+
+![Top side small](pictures/ESP_with_ESP_voltage_regulator_topside_thumbnail.jpg)
+
+[Top side large](pictures/ESP_with_ESP_voltage_regulator_topside.jpg)
+
+Bottom side:
+
+![Bottom side small](pictures/ESP_with_ESP_voltage_regulator_underside_thumbnail.jpg)
+
+[Bottom side large](pictures/ESP_with_ESP_voltage_regulator_underside.jpg)
 
 ## 3rd party libraries
 
