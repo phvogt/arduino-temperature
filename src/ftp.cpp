@@ -1,3 +1,12 @@
+#include "all_headers.h"
+
+WiFiClient global_ftpclient;
+WiFiClient global_ftpdclient;
+char global_ftpoutBuf[128];
+unsigned int global_ftpoutCount;
+IPAddress global_ftpserver(192, 168, 2, 2);
+
+
 byte ftpUploadFile(String filename) {
 
 	if (global_ftpclient.connect(global_ftpserver, 21)) {  // 21 = FTP server
@@ -86,7 +95,7 @@ byte ftpUploadFile(String filename) {
 	uint8_t clientBuf[bufSizeFTP];
 	size_t clientCount = 0;
 
-	File fh = SPIFFS.open(filename, "r");
+	File fh = LittleFS.open(filename, "r");
 	while (fh.available()) {
 		clientBuf[clientCount] = fh.read();
 		clientCount++;

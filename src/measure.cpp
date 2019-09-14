@@ -1,3 +1,7 @@
+#include "all_headers.h"
+
+DHT global_dht(DHTPIN, DHTTYPE);
+
 // Gets the temperature / humidity and sends it to MQTT.
 // parameters:
 //   simulateValues ... flag if values should be simulated (true) or not (false)

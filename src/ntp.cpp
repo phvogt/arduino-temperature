@@ -1,3 +1,11 @@
+#include "all_headers.h"
+
+WiFiUDP global_ntpUDP;
+NTPClient global_timeClient(global_ntpUDP, NTP_SERVER, NTP_TIME_OFFSET,
+                            NTP_UPDATE_INTERVAL);
+time_t global_time = 0;
+
+
 // Gets the date/time in the format YY-MM-DD hh:mm:ss.
 // parameters: none
 // returns the date time as String

@@ -1,3 +1,19 @@
+#include "all_headers.h"
+
+long global_wifiMillis = 0;
+
+// from https://www.bakke.online/index.php/2017/06/24/esp8266-wifi-power-reduction-avoiding-network-scan/
+// The ESP8266 RTC memory is arranged into blocks of 4 bytes. The access methods read and write 4 bytes at a time,
+// so the RTC data structure should be padded to a 4-byte multiple.
+struct RTCDATA{
+  uint32_t crc32;   // 4 bytes
+  uint8_t channel;  // 1 byte,   5 in total
+  uint8_t bssid[6]; // 6 bytes, 11 in total
+  uint8_t padding;  // 1 byte,  12 in total
+};
+
+struct RTCDATA rtcData;
+
 // Initialize WIFI.
 // parameters:
 //   wifissid ... SSID
@@ -24,21 +40,27 @@ int initWifi(String ssid, String password, int maxWifiConnectionRetries,
 	doLogInfo("Wifi connecting to \"" + ssid + "\"");
 	initWifiConfig();
 
-	boolean rtcValid = readWifiSettingsFromRTC();
-	doLogInfo("  rtcValid: " + String(rtcValid));
-	if (rtcValid) {
-		// The RTC data was good, make a quick connection
-		doLogInfo("  connecting with RTC-data");
-		if (WiFi.status() != WL_CONNECTED) {
-			doLogInfo("  not connected, calling begin()");
-			WiFi.begin(c_ssid, c_password, rtcData.channel, rtcData.bssid,
-					true);
+	if (WIFI_RTC_ENABLED) {
+		doLogInfo("connecting with RTC");
+		boolean rtcValid = readWifiSettingsFromRTC();
+		doLogInfo("  rtcValid: " + String(rtcValid));
+		if (rtcValid) {
+			// The RTC data was good, make a quick connection
+			doLogInfo("  connecting with RTC-data");
+			if (WiFi.status() != WL_CONNECTED) {
+				doLogInfo("  not connected, calling begin()");
+				WiFi.begin(c_ssid, c_password, rtcData.channel, rtcData.bssid,
+						true);
+			} else {
+				doLogInfo("  already connected, not calling begin()");
+			}
 		} else {
-			doLogInfo("  already connected, not calling begin()");
+			// The RTC data was not valid, so make a regular connection
+			doLogInfo("  RTC invalid, connecting normally");
+			WiFi.begin(c_ssid, c_password);
 		}
 	} else {
-		// The RTC data was not valid, so make a regular connection
-		doLogInfo("  connecting normally");
+		doLogInfo("connecting without RTC");
 		WiFi.begin(c_ssid, c_password);
 	}
 
