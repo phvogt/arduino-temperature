@@ -1,3 +1,5 @@
+#include "all_headers.h"
+
 // initialize the MQTT client
 // parameters:
 //   host ... MQTT host

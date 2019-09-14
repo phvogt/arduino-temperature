@@ -1,3 +1,5 @@
+#include "all_headers.h"
+
 // Getting the reset reason.
 // parameters: none
 // returns the reset reason

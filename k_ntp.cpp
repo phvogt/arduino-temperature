@@ -1,3 +1,5 @@
+#include "all_headers.h"
+
 // Gets the date/time in the format YY-MM-DD hh:mm:ss.
 // parameters: none
 // returns the date time as String

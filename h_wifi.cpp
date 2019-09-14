@@ -1,3 +1,5 @@
+#include "all_headers.h"
+
 // Initialize WIFI.
 // parameters:
 //   wifissid ... SSID

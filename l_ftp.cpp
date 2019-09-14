@@ -1,3 +1,5 @@
+#include "all_headers.h"
+
 byte ftpUploadFile(String filename) {
 
 	if (global_ftpclient.connect(global_ftpserver, 21)) {  // 21 = FTP server

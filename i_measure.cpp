@@ -1,3 +1,5 @@
+#include "all_headers.h"
+
 // Gets the temperature / humidity and sends it to MQTT.
 // parameters:
 //   simulateValues ... flag if values should be simulated (true) or not (false)

@@ -1,3 +1,5 @@
+#include "all_headers.h"
+
 // List the content of the directory.
 // parameters:
 //   directory ... the directory to list

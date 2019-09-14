@@ -1,3 +1,5 @@
+#include "all_headers.h"
+
 void setup() {
 
 	// store the start time
