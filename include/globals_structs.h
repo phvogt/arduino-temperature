@@ -15,32 +15,27 @@
 // global variables
 
 // is the log file ready to write?
-//boolean global_log_enabled = false;
 static boolean global_log_enabled = false;
 
 // start time in milli seconds
-//unsigned long global_startMillis = 0;
 static unsigned long global_startMillis = 0;
 
 // timestamp
-//String global_timestamp = "<unkown time>";
 static String global_timestamp = "<unkown time>";
 
 // for measuring timing
-//unsigned long global_timingStart = 0;
 static unsigned long global_timingStart = 0;
 // contains all the timings
-//String global_timings = "";
 static String global_timings = "";
 
 // ---------------------------------------------------
-// g_mqtt.ino
+// mqtt.cpp
 
 static WiFiClient global_mqttNet;
 static MQTTClient global_mqttClient;
 
 // ---------------------------------------------------
-// h_wifi.ino
+// wifi.cpp
 
 // milliseconds until wifi connection was established
 static long global_wifiMillis = 0;
@@ -56,7 +51,7 @@ struct {
 } rtcData;
 
 // ---------------------------------------------------
-// i_measure.ino
+// measure.cpp
 
 //ADC_MODE(ADC_TOUT);
 
@@ -64,7 +59,7 @@ struct {
 static DHT global_dht(DHTPIN, DHTTYPE);
 
 // ---------------------------------------------------
-// j_file.ino
+// file.cpp
 
 // name of the logfile
 static String global_logfileName = LOGFILE_NAME;
@@ -73,14 +68,14 @@ static String global_logfileName = LOGFILE_NAME;
 static String global_logBuffer = "";
 
 // ---------------------------------------------------
-// k_ntp.ino
+// ntp.cpp
 static WiFiUDP global_ntpUDP;
 static NTPClient global_timeClient(global_ntpUDP, NTP_SERVER, NTP_TIME_OFFSET,
                             NTP_UPDATE_INTERVAL);
 static time_t global_time = 0;
 
 // ---------------------------------------------------
-// l_ftp.ino
+// ftp.cpp
 
 static WiFiClient global_ftpclient;
 static WiFiClient global_ftpdclient;
