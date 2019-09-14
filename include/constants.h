@@ -48,9 +48,9 @@ const unsigned long MQTT_CONNECT_RETRY_DELAY_IN_MILLIS = 500;
 // h_wifi.ino constants
 
 // only try this number times to connect to wifi (with delay below)
-static int WIFI_MAX_RETRIES = 150;
+static int WIFI_MAX_RETRIES = 200;
 // delay between wifi connection retries
-static unsigned long WIFI_CONNECT_RETRY_DELAY_IN_MILLIS = 50;
+static unsigned long WIFI_CONNECT_RETRY_DELAY_IN_MILLIS = 100;
 // after this number of retries the WiFi gets disconnected and reconnected
 static int WIFI_RETRY_RESET_COUNT = 50;
 
