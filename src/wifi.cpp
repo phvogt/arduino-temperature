@@ -26,21 +26,27 @@ int initWifi(String ssid, String password, int maxWifiConnectionRetries,
 	doLogInfo("Wifi connecting to \"" + ssid + "\"");
 	initWifiConfig();
 
-	boolean rtcValid = readWifiSettingsFromRTC();
-	doLogInfo("  rtcValid: " + String(rtcValid));
-	if (rtcValid) {
-		// The RTC data was good, make a quick connection
-		doLogInfo("  connecting with RTC-data");
-		if (WiFi.status() != WL_CONNECTED) {
-			doLogInfo("  not connected, calling begin()");
-			WiFi.begin(c_ssid, c_password, rtcData.channel, rtcData.bssid,
-					true);
+	if (WIFI_RTC_ENABLED) {
+		doLogInfo("connecting with RTC");
+		boolean rtcValid = readWifiSettingsFromRTC();
+		doLogInfo("  rtcValid: " + String(rtcValid));
+		if (rtcValid) {
+			// The RTC data was good, make a quick connection
+			doLogInfo("  connecting with RTC-data");
+			if (WiFi.status() != WL_CONNECTED) {
+				doLogInfo("  not connected, calling begin()");
+				WiFi.begin(c_ssid, c_password, rtcData.channel, rtcData.bssid,
+						true);
+			} else {
+				doLogInfo("  already connected, not calling begin()");
+			}
 		} else {
-			doLogInfo("  already connected, not calling begin()");
+			// The RTC data was not valid, so make a regular connection
+			doLogInfo("  RTC invalid, connecting normally");
+			WiFi.begin(c_ssid, c_password);
 		}
 	} else {
-		// The RTC data was not valid, so make a regular connection
-		doLogInfo("  connecting normally");
+		doLogInfo("connecting without RTC");
 		WiFi.begin(c_ssid, c_password);
 	}
 
