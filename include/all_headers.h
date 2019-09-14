@@ -10,10 +10,10 @@
 #include <NTPClient.h>
 #include <TimeLib.h>
 
-#include "a_constants.h"
-#include "b_config.h"
-#include "b_config_user.h"
-#include "c_globals_structs.h"
+#include "constants.h"
+#include "config.h"
+#include "config_user.h"
+#include "globals_structs.h"
 
 
 // d_setup
