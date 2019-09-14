@@ -39,8 +39,8 @@ const String FTP_PASSWORD = "Srmnq8US";
 // Sensor aussen 002
 const double BATTERY_RESISTOR_ADC_BATT_VALUE = 215000 + 456000;
 const double BATTERY_RESISTOR_ADC_GND_VALUE = 97900;
-const String WIFI_HOSTNAME = "sensor-aussen";
-const String MQTT_ROOM = "room_aussen";
+const String WIFI_HOSTNAME = "sensor-test";
+const String MQTT_ROOM = "room_test";
 const byte WIFI_IP[4] = { 192, 168, 2, 101 };
 
 #endif /* CONFIG_USER_H_ */
