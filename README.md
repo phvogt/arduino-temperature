@@ -24,17 +24,17 @@ Bottom side:
 
 ## 3rd party libraries
 
-The necessary 3rd party libraries are listed in [arduino-temperature.ino](arduino-temperature.ino).
+The necessary 3rd party libraries are listed in [src/arduino-temperature.cpp](src/arduino-temperature.cpp).
 
 ## Configuration
 
-The software can be configured in [b_config.ino](b_config.ino). 
+The software must be configured by copying [include/config.h](include/config.h) to [include/config_user.h](include/config_user.h). 
 
 ## Working mode
 
-The working mode can be set in the file [a_constants.ino](a_constants.ino).
+The working mode can be set in the file [include/constants.h](include/constants.h) with the variable `WORK_MODE`.
 
 ## Logging
 
-If no connection to the Wifi or MQTT can be made, a log file is written. The log file can be printed with the WORK_MODE_PRINT_LOGFILES constant.
+If no connection to the Wifi or MQTT can be made, a log file is written. The log file can be printed in the file [include/constants.h](include/constants.h) with setting the variable `WORK_MODE = WORK_MODE_PRINT_LOGFILES`.
 The changed program has to be uploaded to print the log file.
