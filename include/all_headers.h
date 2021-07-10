@@ -6,7 +6,7 @@
 #include <WiFiUdp.h>
 #include <MQTTClient.h>
 #include <DHT.h>
-#include "FS.h"
+#include "LittleFS.h"
 #include <NTPClient.h>
 #include <TimeLib.h>
 

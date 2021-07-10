@@ -1,5 +1,8 @@
 #include "all_headers.h"
 
+WiFiClient global_mqttNet;
+MQTTClient global_mqttClient;
+
 // initialize the MQTT client
 // parameters:
 //   host ... MQTT host

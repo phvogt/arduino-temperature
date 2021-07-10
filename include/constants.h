@@ -48,11 +48,11 @@ const unsigned long MQTT_CONNECT_RETRY_DELAY_IN_MILLIS = 500;
 // h_wifi.ino constants
 
 // only try this number times to connect to wifi (with delay below)
-static int WIFI_MAX_RETRIES = 200;
+const int WIFI_MAX_RETRIES = 200;
 // delay between wifi connection retries
-static unsigned long WIFI_CONNECT_RETRY_DELAY_IN_MILLIS = 100;
+const unsigned long WIFI_CONNECT_RETRY_DELAY_IN_MILLIS = 100;
 // after this number of retries the WiFi gets disconnected and reconnected
-static int WIFI_RETRY_RESET_COUNT = 50;
+const int WIFI_RETRY_RESET_COUNT = 50;
 
 // ---------------------------------------------------
 // i_measure.ino constants
@@ -60,7 +60,7 @@ static int WIFI_RETRY_RESET_COUNT = 50;
 // maximum times to try to read values from DHT (with delay below)
 const int DHT_MAX_READ_VALUES_RETRIES = 10;
 // delay between wifi connection retries
-static unsigned long DHT_DELAY_IN_MILLIS = 200;
+const unsigned long DHT_DELAY_IN_MILLIS = 1100;
 
 // simulate values for debugging purposes
 const boolean DHT_SIMULATE_VALUES = false;

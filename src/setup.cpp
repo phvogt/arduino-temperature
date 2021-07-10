@@ -1,5 +1,8 @@
 #include "all_headers.h"
 
+boolean global_log_enabled = false;
+unsigned long global_startMillis = 0;
+
 void setup() {
 
 	// store the start time
@@ -297,11 +300,11 @@ void sendMQTTTimings() {
 void startFS() {
 
 	doLogInfo("------------------------------------------------------");
-	doLogInfo("Starting SPIFFS");
+	doLogInfo("Starting LittleFS");
 
 	timingStart();
-	// setup SPIFFS to write files to flash file system
-	SPIFFS.begin();
+	// setup LittleFS to write files to flash file system
+	LittleFS.begin();
 	timingEnd("FS");
 }
 
@@ -311,10 +314,10 @@ void startFS() {
 void stopFS() {
 
 	doLogInfo("------------------------------------------------------");
-	doLogInfo("Stopping SPIFFS");
+	doLogInfo("Stopping LittleFS");
 
 	global_log_enabled = false;
-	SPIFFS.end();
+	LittleFS.end();
 }
 
 // Dump the current log file buffer to the log file.

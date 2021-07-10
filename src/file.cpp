@@ -1,5 +1,11 @@
 #include "all_headers.h"
 
+// name of the logfile
+String global_logfileName = LOGFILE_NAME;
+// buffer for logs until the log is ready
+String global_logBuffer = "";
+
+
 // List the content of the directory.
 // parameters:
 //   directory ... the directory to list
@@ -8,7 +14,7 @@ void listDirectory(String directory) {
 
 	Serial.println("all files in " + directory + " :");
 
-	Dir dir = SPIFFS.openDir(directory);
+	Dir dir = LittleFS.openDir(directory);
 	while (dir.next()) {
 		Serial.print(dir.fileName());
 		Serial.print(" size: ");
@@ -37,21 +43,21 @@ void rotateLogfiles(String logfileName, int maxBackup) {
 
 	// remove last file
 	String lastBackupName = getLogfileBackupName(logfileName, maxBackup);
-	if (SPIFFS.exists(lastBackupName)) {
-		SPIFFS.remove(lastBackupName);
+	if (LittleFS.exists(lastBackupName)) {
+		LittleFS.remove(lastBackupName);
 	}
 	// rotate all backup files
 	for (int i = maxBackup - 1; i >= 0; i--) {
 		String currentBackupName = getLogfileBackupName(logfileName, i);
-		if (SPIFFS.exists(currentBackupName)) {
+		if (LittleFS.exists(currentBackupName)) {
 			String nextBackupName = getLogfileBackupName(logfileName, i + 1);
-			SPIFFS.rename(currentBackupName, nextBackupName);
+			LittleFS.rename(currentBackupName, nextBackupName);
 		}
 	}
 	// rotate current logfile to first backup file
-	if (SPIFFS.exists(logfileName)) {
+	if (LittleFS.exists(logfileName)) {
 		String firstBackupName = getLogfileBackupName(logfileName, 0);
-		SPIFFS.rename(logfileName, firstBackupName);
+		LittleFS.rename(logfileName, firstBackupName);
 	}
 
 	// ready to log in log file
@@ -70,24 +76,24 @@ void printLogfiles(String logfileName, int maxBackup) {
 	Serial.println("printing log files: " + logfileName);
 
 	// print current logfile
-	if (SPIFFS.exists(logfileName)) {
+	if (LittleFS.exists(logfileName)) {
 		printFileToSerial(logfileName);
 	}
 
 	// print last good logfile
-	if (SPIFFS.exists(logfileName + LOGFILE_LASTGOOD_EXTENSION)) {
+	if (LittleFS.exists(logfileName + LOGFILE_LASTGOOD_EXTENSION)) {
 		printFileToSerial(logfileName + LOGFILE_LASTGOOD_EXTENSION);
 	}
 
 	// print last bad logfile
-	if (SPIFFS.exists(logfileName + LOGFILE_LASTBAD_EXTENSION)) {
+	if (LittleFS.exists(logfileName + LOGFILE_LASTBAD_EXTENSION)) {
 		printFileToSerial(logfileName + LOGFILE_LASTBAD_EXTENSION);
 	}
 
 	// print all backup files
 	for (int i = 0; i <= maxBackup; i++) {
 		String currentBackupName = getLogfileBackupName(logfileName, i);
-		if (SPIFFS.exists(currentBackupName)) {
+		if (LittleFS.exists(currentBackupName)) {
 			printFileToSerial(currentBackupName);
 		}
 	}
@@ -103,12 +109,12 @@ void deleteLogfiles(String directory, String logfileName) {
 	Serial.println(
 			"deleting in " + directory + " the log files: " + logfileName);
 
-	Dir dir = SPIFFS.openDir(directory);
+	Dir dir = LittleFS.openDir(directory);
 	while (dir.next()) {
 		String filename = dir.fileName();
 		if (filename.indexOf(logfileName) > -1) {
 			Serial.println("  deleting: " + filename);
-			SPIFFS.remove(filename);
+			LittleFS.remove(filename);
 		}
 	}
 }
@@ -191,7 +197,7 @@ void dumpLogBuffer() {
 void writeLog(String logfileName, String logmessage) {
 
 	//open file for appending new blank line to EOF.
-	File f = SPIFFS.open(logfileName, "a");
+	File f = LittleFS.open(logfileName, "a");
 	f.print(logmessage);
 	f.print('\n');
 	f.flush();
@@ -208,7 +214,7 @@ void printFileToSerial(String fileName) {
 
 	Serial.println("------------------------------------------------------");
 
-	File f = SPIFFS.open(fileName, "r");
+	File f = LittleFS.open(fileName, "r");
 	if (!f) {
 		Serial.println("file \"" + fileName + "\" open failed");
 		Serial.println(
@@ -234,16 +240,16 @@ void printFileToSerial(String fileName) {
 // returns nothing
 void copyFile(String sourceFilename, String destFilename) {
 
-	if (!SPIFFS.exists(sourceFilename)) {
+	if (!LittleFS.exists(sourceFilename)) {
 		Serial.println("could not find \"" + sourceFilename + "\"");
 		return;
 	}
-	File fSrc = SPIFFS.open(sourceFilename, "r");
+	File fSrc = LittleFS.open(sourceFilename, "r");
 	if (!fSrc) {
 		Serial.println("error opening \"" + sourceFilename + "\" for reading");
 		return;
 	}
-	File fDst = SPIFFS.open(destFilename, "w");
+	File fDst = LittleFS.open(destFilename, "w");
 	if (!fDst) {
 		Serial.println("error opening \"" + destFilename + "\" for writing");
 		return;
@@ -263,11 +269,11 @@ void copyFile(String sourceFilename, String destFilename) {
 // returns nothing
 void renameFile(String sourceFilename, String destFilename) {
 
-	if (SPIFFS.exists(destFilename)) {
-		SPIFFS.remove(destFilename);
+	if (LittleFS.exists(destFilename)) {
+		LittleFS.remove(destFilename);
 	}
 
-	SPIFFS.rename(sourceFilename, destFilename);
+	LittleFS.rename(sourceFilename, destFilename);
 }
 
 // Deletes the file if it exists.
@@ -276,7 +282,7 @@ void renameFile(String sourceFilename, String destFilename) {
 // returns nothing
 void deleteFile(String filename) {
 
-	if (SPIFFS.exists(filename)) {
-		SPIFFS.remove(filename);
+	if (LittleFS.exists(filename)) {
+		LittleFS.remove(filename);
 	}
 }

@@ -1,5 +1,12 @@
 #include "all_headers.h"
 
+// for measuring timing
+unsigned long global_timingStart = 0;
+
+// contains all the timings
+String global_timings = "";
+
+
 // Getting the reset reason.
 // parameters: none
 // returns the reset reason
