@@ -395,6 +395,7 @@ void doWorkNormal() {
 	long sleepTimeInMicros = calculateSleepTimeMicros(global_startMillis);
 	sendMQTTSleepTime(sleepTimeInMicros);
 	sendMQTTTimings();
+	delay(50);
 
 	// don't log if everything went fine
 	// startFS();
