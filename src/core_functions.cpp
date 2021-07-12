@@ -41,11 +41,13 @@ long calcSleepTimeInMicroSeconds(int sleepTimeInMillis, int startTimeInMillis) {
 		workedTimeMillis = 0;
 	}
 
-	long sleepTimeMicro = sleepTimeInMillis * 1000 - workedTimeMillis * 1000;
+	long sleepTimeMicro = (sleepTimeInMillis * 1000 - workedTimeMillis * 1000) * DEEP_SLEEP_FACTOR;
 	doLogInfo(
 			"startTimeInMillis: " + String(startTimeInMillis)
 					+ " sleepTimeInMillis: " + String(sleepTimeInMillis)
-					+ " sleepTimeMicro: " + String(sleepTimeMicro));
+					+ " sleepFactor = " + String(DEEP_SLEEP_FACTOR)
+					+ " sleepTimeMicro: " + String(sleepTimeMicro)
+			);
 	doLogInfo("======================================================");
 
 	return sleepTimeMicro;

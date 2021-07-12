@@ -72,3 +72,6 @@
 // const double BATTERY_RESISTOR_ADC_BATT_VALUE = 220000 + 470000;
 // // value of the resistor(s) from ADC to the ground
 // const double BATTERY_RESISTOR_ADC_GND_VALUE = 100000;
+
+// // sleep function factor for clock skew
+// const float DEEP_SLEEP_FACTOR = 1.04;
