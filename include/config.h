@@ -1,16 +1,17 @@
+#pragma once
+
 #include <Arduino.h>
+#include "config_user.h"
 
 // // ---------------------------------------------------
 // // common configuration for every sensor in a network
 
 // // ---------------------------------------------------
-// // e_core_functions.ino constants
-
 // // sleep time in milliseconds
 // const int CORE_SLEEP_TIME_IN_MILLIS = 60000;
 
 // // ---------------------------------------------------
-// // f_wifi.ino constants
+// // WIFI
 
 // // SSID for Wifi
 // const String WIFI_SSID = "WifiSSID";
@@ -37,7 +38,7 @@
 // const String WIFI_HOSTNAME = "tempsensor";
 
 // // ---------------------------------------------------
-// // g_mqtt.ino constants
+// // MQTT
 
 // // host name
 // const String MQTT_HOST = "192.168.0.1";
@@ -52,7 +53,7 @@
 // const String MQTT_ROOM = "mqttroom";
 
 // // ---------------------------------------------------
-// // k_ntp.ino constants
+// // NTP
 
 // // NTP server name
 // const char* NTP_SERVER = "192.168.0.1";
@@ -60,13 +61,19 @@
 // const int NTP_TIME_OFFSET = 0;
 
 // // ---------------------------------------------------
-// // l_ftp.ino constants
-// const String FTP_USERNAME = "ftpUser";
+// // FTP
 
+// // FTP server IP address
+// const IPAddress FTP_IP_ADDRESS(192, 168, 0, 1);
+// // FTP server port
+// const uint16_t FTP_SERVER_PORT = 21;
+// // FTP server username
+// const String FTP_USERNAME = "ftpUser";
+// // FTP server password
 // const String FTP_PASSWORD = "ftpPassword";
 
 // // ---------------------------------------------------
-// // i_measure.ino constants
+// // Measure
 
 // // value of the resistor(s) from ADC to the battery
 // const double BATTERY_RESISTOR_ADC_BATT_VALUE = 220000 + 470000;

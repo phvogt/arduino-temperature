@@ -1,176 +1,158 @@
-#include "all_headers.h"
+#include "ftp.h"
 
-WiFiClient global_ftpclient;
-WiFiClient global_ftpdclient;
-char global_ftpoutBuf[128];
-unsigned int global_ftpoutCount;
-IPAddress global_ftpserver(192, 168, 2, 2);
+#include "LittleFS.h"
 
+#include "config.h"
+#include "constants.h"
 
-byte ftpUploadFile(String filename) {
-
-	if (global_ftpclient.connect(global_ftpserver, 21)) {  // 21 = FTP server
-		Serial.println(F("Command connected"));
-	} else {
-		Serial.println(F("Command connection failed"));
-		return 0;
-	}
-	if (!eRcv())
-		return 0;
-	if (debug)
-		Serial.println("Send USER");
-	global_ftpclient.println("USER " + FTP_USERNAME);
-
-	if (!eRcv())
-		return 0;
-	if (debug)
-		Serial.println("Send PASSWORD");
-	global_ftpclient.println("PASS " + FTP_PASSWORD);
-
-	if (!eRcv())
-		return 0;
-	if (debug)
-		Serial.println("Send SYST");
-	global_ftpclient.println(F("SYST"));
-
-	if (!eRcv())
-		return 0;
-	if (debug)
-		Serial.println("Send Type I");
-	global_ftpclient.println(F("Type I"));
-
-	if (!eRcv())
-		return 0;
-	if (debug)
-		Serial.println("Send PASV");
-	global_ftpclient.println(F("PASV"));
-
-	if (debug)
-		Serial.println("Send PASV2");
-	if (!eRcv())
-		return 0;
-	if (debug)
-		Serial.println("Send PASV3");
-
-	char *tStr = strtok(global_ftpoutBuf, "(,");
-	int array_pasv[6];
-	for (int i = 0; i < 6; i++) {
-		tStr = strtok(NULL, "(,");
-		array_pasv[i] = atoi(tStr);
-		if (tStr == NULL) {
-			Serial.println(F("Bad PASV Answer"));
-		}
-	}
-	unsigned int hiPort, loPort;
-	hiPort = array_pasv[4] << 8;
-	loPort = array_pasv[5] & 255;
-
-	if (debug)
-		Serial.print(F("Data port: "));
-	hiPort = hiPort | loPort;
-	if (debug)
-		Serial.println(hiPort);
-
-	if (global_ftpdclient.connect(global_ftpserver, hiPort)) {
-		Serial.println(F("Data connected"));
-	} else {
-		Serial.println(F("Data connection failed"));
-		global_ftpclient.stop();
-		return 0;
-	}
-
-	if (debug)
-		Serial.println("Send STOR filename");
-	global_ftpclient.print(F("STOR "));
-	global_ftpclient.println(filename);
-
-	if (!eRcv()) {
-		global_ftpdclient.stop();
-		return 0;
-	}
-
-	if (debug)
-		Serial.println(F("Writing"));
-#define bufSizeFTP 1460
-	uint8_t clientBuf[bufSizeFTP];
-	size_t clientCount = 0;
-
-	File fh = LittleFS.open(filename, "r");
-	while (fh.available()) {
-		clientBuf[clientCount] = fh.read();
-		clientCount++;
-		if (clientCount > (bufSizeFTP - 1)) {
-			global_ftpdclient.write((const uint8_t *) &clientBuf[0],
-					bufSizeFTP);
-			clientCount = 0;
-			delay(1);
-		}
-	}
-	if (clientCount > 0)
-		global_ftpdclient.write((const uint8_t *) &clientBuf[0], clientCount);
-	fh.close();
-
-	global_ftpdclient.stop();
-	Serial.println(F("Data disconnected"));
-
-	if (!eRcv())
-		return 0;
-
-	global_ftpclient.println(F("QUIT"));
-
-	if (!eRcv())
-		return 0;
-
-	global_ftpclient.stop();
-	if (debug)
-		Serial.println(F("SPIFS closed"));
-	return 1;
+arduino_temp::FTP::FTP(IPAddress ftpserverip, uint16_t ftpport, boolean debug)
+    : filehandler_(LOG_ENABLED) {
+  debug_ = debug;
+  ftpserver_ = ftpserverip;
+  ftpport_ = ftpport;
 }
 
-//----------------- FTP fail
-void efail() {
-	byte thisByte = 0;
+byte arduino_temp::FTP::ftpUploadFile(String filename) {
+  if (ftpclient_.connect(ftpserver_, ftpport_)) {
+    Serial.println(F("Command connected"));
+  } else {
+    Serial.println(F("Command connection failed"));
+    return 0;
+  }
+  if (!eRcv()) return 0;
+  if (debug_) Serial.println("Send USER");
+  ftpclient_.println("USER " + FTP_USERNAME);
 
-	global_ftpclient.println(F("QUIT"));
+  if (!eRcv()) return 0;
+  if (debug_) Serial.println("Send PASSWORD");
+  ftpclient_.println("PASS " + FTP_PASSWORD);
 
-	while (!global_ftpclient.available())
-		delay(1);
+  if (!eRcv()) return 0;
+  if (debug_) Serial.println("Send SYST");
+  ftpclient_.println(F("SYST"));
 
-	while (global_ftpclient.available()) {
-		thisByte = global_ftpclient.read();
-		Serial.write(thisByte);
-	}
+  if (!eRcv()) return 0;
+  if (debug_) Serial.println("Send Type I");
+  ftpclient_.println(F("Type I"));
 
-	global_ftpclient.stop();
-	Serial.println(F("Command disconnected"));
-}  // efail
+  if (!eRcv()) return 0;
+  if (debug_) Serial.println("Send PASV");
+  ftpclient_.println(F("PASV"));
 
-//-------------- FTP receive
-byte eRcv() {
-	byte respCode;
-	byte thisByte;
+  if (debug_) Serial.println("Send PASV2");
+  if (!eRcv()) return 0;
+  if (debug_) Serial.println("Send PASV3");
 
-	while (!global_ftpclient.available())
-		delay(1);
+  char *tStr = strtok(ftpoutBuf_, "(,");
+  int array_pasv[6];
+  for (int i = 0; i < 6; i++) {
+    tStr = strtok(NULL, "(,");
+    array_pasv[i] = atoi(tStr);
+    if (tStr == NULL) {
+      Serial.println(F("Bad PASV Answer"));
+    }
+  }
+  unsigned int hiPort, loPort;
+  hiPort = array_pasv[4] << 8;
+  loPort = array_pasv[5] & 255;
 
-	respCode = global_ftpclient.peek();
+  if (debug_) Serial.print(F("Data port: "));
+  hiPort = hiPort | loPort;
+  if (debug_) Serial.println(hiPort);
 
-	global_ftpoutCount = 0;
+  if (ftpdclient_.connect(ftpserver_, hiPort)) {
+    Serial.println(F("Data connected"));
+  } else {
+    Serial.println(F("Data connection failed"));
+    ftpclient_.stop();
+    return 0;
+  }
 
-	while (global_ftpclient.available()) {
-		thisByte = global_ftpclient.read();
-		Serial.write(thisByte);
+  if (debug_) Serial.println("Send STOR filename");
+  ftpclient_.print(F("STOR "));
+  ftpclient_.println(filename);
 
-		if (global_ftpoutCount < 127) {
-			global_ftpoutBuf[global_ftpoutCount] = thisByte;
-			global_ftpoutCount++;
-			global_ftpoutBuf[global_ftpoutCount] = 0;
-		}
-	}
+  if (!eRcv()) {
+    ftpdclient_.stop();
+    return 0;
+  }
 
-	if (respCode >= '4') {
-		efail();
-		return 0;
-	}
-	return 1;
-}  // eRcv()
+  if (debug_) Serial.println(F("Writing"));
+#define bufSizeFTP 1460
+  uint8_t clientBuf[bufSizeFTP];
+  size_t clientCount = 0;
+
+  File fh = LittleFS.open(filename, "r");
+  while (fh.available()) {
+    clientBuf[clientCount] = fh.read();
+    clientCount++;
+    if (clientCount > (bufSizeFTP - 1)) {
+      ftpdclient_.write((const uint8_t *)&clientBuf[0], bufSizeFTP);
+      clientCount = 0;
+      delay(1);
+    }
+  }
+  if (clientCount > 0)
+    ftpdclient_.write((const uint8_t *)&clientBuf[0], clientCount);
+  fh.close();
+
+  ftpdclient_.stop();
+  Serial.println(F("Data disconnected"));
+
+  if (!eRcv()) return 0;
+
+  ftpclient_.println(F("QUIT"));
+
+  if (!eRcv()) return 0;
+
+  ftpclient_.stop();
+  if (debug_) Serial.println(F("SPIFS closed"));
+  return 1;
+}
+
+// FTP error handler
+void arduino_temp::FTP::efail() {
+  byte thisByte = 0;
+
+  ftpclient_.println(F("QUIT"));
+
+  while (!ftpclient_.available()) delay(1);
+
+  while (ftpclient_.available()) {
+    thisByte = ftpclient_.read();
+    Serial.write(thisByte);
+  }
+
+  ftpclient_.stop();
+  Serial.println(F("Command disconnected"));
+}
+
+// receive from FTP and put into ftpoutBuf_.
+// returns the read byte
+byte arduino_temp::FTP::eRcv() {
+  byte respCode;
+  byte thisByte;
+
+  while (!ftpclient_.available()) delay(1);
+
+  respCode = ftpclient_.peek();
+
+  unsigned int ftpoutCount = 0;
+
+  while (ftpclient_.available()) {
+    thisByte = ftpclient_.read();
+    Serial.write(thisByte);
+
+    if (ftpoutCount < 127) {
+      ftpoutBuf_[ftpoutCount] = thisByte;
+      ftpoutCount++;
+      ftpoutBuf_[ftpoutCount] = 0;
+    }
+  }
+
+  if (respCode >= '4') {
+    efail();
+    return 0;
+  }
+  return 1;
+}

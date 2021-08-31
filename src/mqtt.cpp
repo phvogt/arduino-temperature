@@ -1,88 +1,102 @@
-#include "all_headers.h"
+#include "mqtt.h"
 
-WiFiClient global_mqttNet;
-MQTTClient global_mqttClient;
+#include "constants.h"
 
-// initialize the MQTT client
 // parameters:
 //   host ... MQTT host
 //   port ... MQTT port (1883 for no SSL or 8883 for SSL)
 //   username ... MQTT username
 //   password ... MQTT password
-// returns true if the MQTT client is connected
-boolean initMqtt(String host, const int port, String username, String password,
-		int maxMqttConnectionRetries,
-		unsigned long mqttConnectRetryDelayInMillis) {
+//   maxMqttConnectionRetries ... maximum retries for MQTT connections
+//   mqttConnectRetryDelayInMillis ... delay in milliseconds between retries
+arduino_temp::MQTT::MQTT(String host, const int port, String username,
+                         String password, int maxMqttConnectionRetries,
+                         unsigned long mqttConnectRetryDelayInMillis)
+    : filehandler_(LOG_ENABLED) {
+  host_ = (char *)malloc(host.length() + 1);
+  host.toCharArray(host_, host.length() + 1);
 
-	// convert parameters for library
-	char c_host[host.length() + 1];
-	host.toCharArray(c_host, host.length() + 1);
-	char c_username[username.length() + 1];
-	username.toCharArray(c_username, username.length() + 1);
-	char c_password[password.length() + 1];
-	password.toCharArray(c_password, password.length() + 1);
+  port_ = port;
 
-	doLogInfo("------------------------------------------------------");
-	doLogInfo("MQTT connecting to " + host + ":" + port);
+  username_ = (char *)malloc(username.length() + 1);
+  username.toCharArray(username_, username.length() + 1);
 
-	global_mqttClient.begin(c_host, port, global_mqttNet);
+  password_ = (char *)malloc(password.length() + 1);
+  password.toCharArray(password_, password.length() + 1);
 
-	doLogInfo("connecting...");
+  maxMqttConnectionRetries_ = maxMqttConnectionRetries;
+  mqttConnectRetryDelayInMillis_ = mqttConnectRetryDelayInMillis;
+}
 
-	int mqttWifiCount = 0;
-	while (!global_mqttClient.connect(c_host, c_username, c_password)
-			&& (mqttWifiCount < maxMqttConnectionRetries)) {
-		doLogInfo(".");
-		delay(mqttConnectRetryDelayInMillis);
-		mqttWifiCount++;
-	}
-	doLogInfo("");
+arduino_temp::MQTT::~MQTT() {
+  free(host_);
+  free(username_);
+  free(password_);
+}
 
-	boolean isMqttConnected = global_mqttClient.connected();
+// Setups of the MQTT.
+// parameters: none
+// returns the MQTT connection status
+boolean arduino_temp::MQTT::setupMQTT() {
+  filehandler_.doLogInfoLine();
+  filehandler_.doLogInfo("setup MQTT");
+  filehandler_.doLogInfoLine();
+  filehandler_.doLogInfo("MQTT connecting to " + String(host_) + ":" + port_);
 
-	if (isMqttConnected) {
-		doLogInfo("MQTT connected");
-	} else {
-		doLogWarn("MQTT not connected!");
-	}
-	doLogInfo("------------------------------------------------------");
+  mqttClient_.begin(host_, port_, mqttNet_);
 
-	return isMqttConnected;
+  filehandler_.doLogInfo("connecting...");
+
+  int mqttWifiCount = 0;
+  while (!mqttClient_.connect(host_, username_, password_) &&
+         (mqttWifiCount < maxMqttConnectionRetries_)) {
+    filehandler_.doLogInfo(".");
+    delay(mqttConnectRetryDelayInMillis_);
+    mqttWifiCount++;
+  }
+  filehandler_.doLogInfo("");
+
+  boolean isMqttConnected = mqttClient_.connected();
+
+  if (isMqttConnected) {
+    filehandler_.doLogInfo("MQTT connected");
+  } else {
+    filehandler_.doLogWarn("MQTT not connected!");
+  }
+  filehandler_.doLogInfoLine();
+
+  return isMqttConnected;
 }
 
 // Send MQTT message.
 // parameters:
 // topic ... topic
 // message ... message
-void sendMqtt(String topic, String message) {
+void arduino_temp::MQTT::sendMqtt(String topic, String message) {
+  filehandler_.doLogInfo("MQTT sending: to \"" + topic + "\": \"" + message +
+                         "\" (length: " + message.length() + ")");
 
-	doLogInfo(
-			"MQTT sending: to \"" + topic + "\": \"" + message + "\" (length: "
-					+ message.length() + ")");
+  // only send message, if connected
+  if (mqttClient_.connected()) {
+    // process messages
+    mqttClient_.loop();
 
-	// only send message, if connected
-	if (global_mqttClient.connected()) {
+    // convert parameter
+    char c_topic[topic.length() + 1];
+    topic.toCharArray(c_topic, topic.length() + 1);
 
-		// process messages
-		global_mqttClient.loop();
+    char c_message[message.length() + 1];
+    message.toCharArray(c_message, message.length() + 1);
 
-		// convert parameter
-		char c_topic[topic.length() + 1];
-		topic.toCharArray(c_topic, topic.length() + 1);
+    // send message
+    int returnstatus =
+        mqttClient_.publish(c_topic, c_message, message.length());
 
-		char c_message[message.length() + 1];
-		message.toCharArray(c_message, message.length() + 1);
-
-		// send message
-		int returnstatus = global_mqttClient.publish(c_topic, c_message,
-				message.length());
-
-		if (returnstatus != 1) {
-			doLogInfo("  not sent! returnstatus = " + String(returnstatus));
-		}
-	} else {
-		doLogWarn("  not connected, so not sending.");
-	}
-
+    if (returnstatus != 1) {
+      filehandler_.doLogInfo("  not sent! returnstatus = " +
+                             String(returnstatus));
+    }
+  } else {
+    filehandler_.doLogWarn("  not connected, so not sending.");
+  }
 }
-

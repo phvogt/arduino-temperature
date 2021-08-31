@@ -38,3 +38,45 @@ The working mode can be set in the file [include/constants.h](include/constants.
 
 If no connection to the Wifi or MQTT can be made, a log file is written. The log file can be printed in the file [include/constants.h](include/constants.h) with setting the variable `WORK_MODE = WORK_MODE_PRINT_LOGFILES`.
 The changed program has to be uploaded to print the log file.
+
+## Libraries
+
+```
+name=ESP8266WiFi
+version=1.0
+author=Ivan Grokhotkov
+category=Communication
+url=
+
+name=MQTT
+version=2.4.3
+author=Joel Gaehwiler <joel.gaehwiler@gmail.com>
+category=Communication
+url=https://github.com/256dpi/arduino-mqtt
+
+name=DHT sensor library
+version=1.3.7
+author=Adafruit
+category=Sensors
+url=https://github.com/adafruit/DHT-sensor-library
+
+needed for DHT
+name=Adafruit Unified Sensor
+version=1.0.3
+author=Adafruit <info@adafruit.com>
+category=Sensors
+url=https://github.com/adafruit/Adafruit_Sensor
+
+
+name=NTPClient
+version=3.1.0
+author=Fabrice Weinberg
+category=Timing
+url=https://github.com/arduino-libraries/NTPClient
+
+name=Time
+version=1.5
+author=Michael Margolis
+category=Timing
+url=http://playground.arduino.cc/code/time
+```

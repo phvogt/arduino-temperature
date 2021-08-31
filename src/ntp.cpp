@@ -1,58 +1,57 @@
-#include "all_headers.h"
+#include "ntp.h"
 
-WiFiUDP global_ntpUDP;
-NTPClient global_timeClient(global_ntpUDP, NTP_SERVER, NTP_TIME_OFFSET,
-                            NTP_UPDATE_INTERVAL);
-time_t global_time = 0;
+#include <Arduino.h>
+#include <TimeLib.h>
 
+#include "config.h"
+#include "constants.h"
 
-// Gets the date/time in the format YY-MM-DD hh:mm:ss.
-// parameters: none
-// returns the date time as String
-String getDateTime() {
+arduino_temp::NTP::NTP(const char* ntpServer, int ntpTimeOffset,
+                       int ntpUpdateInterval)
+    : ntpUDP_(),
+      timeClient_(ntpUDP_, ntpServer, ntpTimeOffset, ntpUpdateInterval) {
+  ;
+};
 
-	return String(year()) + "-" + String(toStringLeadingZero(month())) + "-"
-			+ String(toStringLeadingZero(day())) + " "
-			+ String(toStringLeadingZero(hour())) + ":"
-			+ String(toStringLeadingZero(minute())) + ":"
-			+ String(toStringLeadingZero(second()));
+time_t arduino_temp::NTP::initNTP() {
+  timeClient_.begin();
+  time_t currentEpoch = getNtpTime(NTP_MAX_RETRIES, NTP_RETRY_DELAY_IN_MILLIS);
+  return currentEpoch;
 }
 
-// Convert the int to a double digit string with leading zeroes.
-// parameters:
-//   value ... the value to convert
-// returns a string with the double digit value with a leading zero
-String toStringLeadingZero(int value) {
-
-	if (value < 10) {
-		return "0" + String(value);
-	} else {
-		return String(value);
-	}
+String arduino_temp::NTP::getDateTime() {
+  return String(year()) + "-" + String(toStringLeadingZero(month())) + "-" +
+         String(toStringLeadingZero(day())) + " " +
+         String(toStringLeadingZero(hour())) + ":" +
+         String(toStringLeadingZero(minute())) + ":" +
+         String(toStringLeadingZero(second()));
 }
 
-// Get the NTP time epoch.
-// parameters:
-//   maxNtpRetries ... number of retries
-//   ntpRetryDelayInMillis ... delay in milliseconds between retries
-// returns the time as epoch
-time_t getNtpTime(int maxNtpRetries, unsigned long ntpRetryDelayInMillis) {
+String arduino_temp::NTP::toStringLeadingZero(int value) {
+  if (value < 10) {
+    return "0" + String(value);
+  } else {
+    return String(value);
+  }
+}
 
-	global_timeClient.update();
+time_t arduino_temp::NTP::getNtpTime(int maxNtpRetries,
+                                     unsigned long ntpRetryDelayInMillis) {
+  timeClient_.update();
 
-	int retryNtpCount = 1;
+  int retryNtpCount = 1;
 
-	unsigned long epoch = 0;
+  unsigned long epoch = 0;
 
-	epoch = global_timeClient.getEpochTime();
+  epoch = timeClient_.getEpochTime();
 
-	// values below 1000 are not realistic
-	while ((epoch < 1000) && (retryNtpCount <= maxNtpRetries)) {
-		retryNtpCount++;
-		delay(ntpRetryDelayInMillis);
-		global_timeClient.update();
-		epoch = global_timeClient.getEpochTime();
-	}
+  // values below 1000 are not realistic
+  while ((epoch < 1000) && (retryNtpCount <= maxNtpRetries)) {
+    retryNtpCount++;
+    delay(ntpRetryDelayInMillis);
+    timeClient_.update();
+    epoch = timeClient_.getEpochTime();
+  }
 
-	return epoch;
+  return epoch;
 }

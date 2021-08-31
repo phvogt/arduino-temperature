@@ -1,6 +1,7 @@
-#ifndef CONSTANTS_H_
-#define CONSTANTS_H_
+#pragma once
 
+#include <Arduino.h>
+#include <DHT.h>
 // contains constants
 
 // ---------------------------------------------------
@@ -20,24 +21,15 @@ const int WORK_MODE_PRINT_FILE = 4;
 const int WORK_MODE_FTPUPLOAD = 5;
 
 // what the program should do
+// const int WORK_MODE = WORK_MODE_NORMAL;
 const int WORK_MODE = WORK_MODE_NORMAL;
-
-// ---------------------------------------------------
-// c_global_structs.ino constants
-
-// constants for DHT
-
-// type of DHT
-#define DHTTYPE DHT22
-// pin the DHT is connected
-#define DHTPIN 12
 
 // constants for communication
 #define BAUDRATE 115200
 //#define BAUDRATE 74880
 
 // ---------------------------------------------------
-// g_mqtt.ino constants
+// MQTT
 
 // only try this number of times to connect to MQTT (with delay below)
 const int MQTT_MAX_RETRIES = 3;
@@ -45,7 +37,7 @@ const int MQTT_MAX_RETRIES = 3;
 const unsigned long MQTT_CONNECT_RETRY_DELAY_IN_MILLIS = 500;
 
 // ---------------------------------------------------
-// h_wifi.ino constants
+// WIFI
 
 // only try this number times to connect to wifi (with delay below)
 const int WIFI_MAX_RETRIES = 200;
@@ -55,7 +47,12 @@ const unsigned long WIFI_CONNECT_RETRY_DELAY_IN_MILLIS = 100;
 const int WIFI_RETRY_RESET_COUNT = 50;
 
 // ---------------------------------------------------
-// i_measure.ino constants
+// Measuring
+
+// type of DHT
+const uint8_t DHTTYPE = DHT22;
+// pin the DHT is connected
+const uint8_t DHTPIN = 12;
 
 // maximum times to try to read values from DHT (with delay below)
 const int DHT_MAX_READ_VALUES_RETRIES = 10;
@@ -66,7 +63,9 @@ const unsigned long DHT_DELAY_IN_MILLIS = 1100;
 const boolean DHT_SIMULATE_VALUES = false;
 
 // ---------------------------------------------------
-// i_file.ino constants
+// Filehandler
+
+const boolean LOG_ENABLED = true;
 
 const String LOGFILE_DIRECTORY = "/";
 
@@ -83,7 +82,8 @@ const String LOGFILE_LASTBAD_EXTENSION = ".lastbad";
 const int LOGFILE_MAX_BACKUPS = 2;
 
 // name of the file to print
-const String PRINT_FILE_NAME = LOGFILE_NAME + LOGFILE_LASTGOOD_EXTENSION;
+// const String PRINT_FILE_NAME = LOGFILE_NAME + LOGFILE_LASTGOOD_EXTENSION;
+const String PRINT_FILE_NAME = LOGFILE_NAME;
 
 // log levels
 const String LOGLEVEL_INFO = "INFO ";
@@ -92,7 +92,7 @@ const String LOGLEVEL_ERROR = "ERROR";
 const String LOGLEVEL_TIME = "TIME ";
 
 // ---------------------------------------------------
-// j_ntp.ino constants
+// NTP
 
 // NTP update interval
 const int NTP_UPDATE_INTERVAL = 60000;
@@ -102,4 +102,8 @@ const int NTP_MAX_RETRIES = 2;
 // delay between ntp retries
 const unsigned long NTP_RETRY_DELAY_IN_MILLIS = 100;
 
-#endif /* CONSTANTS_H_ */
+// ---------------------------------------------------
+// FTP
+
+const boolean FTP_DEBUG_ENABLED = false;
+
