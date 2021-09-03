@@ -56,6 +56,7 @@ void arduino_temp::FileHandler::rotateLogfiles(String logfileName,
   // remove last file
   String lastBackupName = getLogfileBackupName(logfileName, maxBackup);
   if (LittleFS.exists(lastBackupName)) {
+    Serial.println("  removing: " + lastBackupName);
     LittleFS.remove(lastBackupName);
   }
   // rotate all backup files
@@ -63,24 +64,23 @@ void arduino_temp::FileHandler::rotateLogfiles(String logfileName,
     String currentBackupName = getLogfileBackupName(logfileName, i);
     if (LittleFS.exists(currentBackupName)) {
       String nextBackupName = getLogfileBackupName(logfileName, i + 1);
+      Serial.println("  renaming backup: " + currentBackupName +
+                     " to: " + nextBackupName);
       LittleFS.rename(currentBackupName, nextBackupName);
     }
   }
   // rotate current logfile to first backup file
   if (LittleFS.exists(logfileName)) {
     String firstBackupName = getLogfileBackupName(logfileName, 0);
+    Serial.println("  renaming current: " + logfileName +
+                   " to: " + firstBackupName);
     LittleFS.rename(logfileName, firstBackupName);
   }
-
-  // ready to log in log file
-  log_enabled_ = true;
-  // dump the current log buffer to the log file
-  dumpLogBuffer();
 }
 
 void arduino_temp::FileHandler::printLogfiles(String logfileName,
                                               int maxBackup) {
-  Serial.println("printing log files: " + logfileName);
+  Serial.println("printing all log files for: " + logfileName);
 
   // print current logfile
   if (LittleFS.exists(logfileName)) {
@@ -126,8 +126,6 @@ void arduino_temp::FileHandler::doLog(String logLevel, String message) {
   Serial.println(logLine);
 
   if (log_enabled_) {
-    writeLog(logfileName_, logLine);
-  } else {
     if (logBuffer_ == "") {
       logBuffer_ += logLine;
     } else {
@@ -160,14 +158,15 @@ void arduino_temp::FileHandler::doLogInfoDoubleLine() {
   doLogInfo("======================================================");
 }
 
-void arduino_temp::FileHandler::dumpLogBuffer() {
-  writeLog(logfileName_, logBuffer_);
+void arduino_temp::FileHandler::dumpLogBuffer(String logfileName) {
+  writeLog(logfileName, logBuffer_);
 }
 
 void arduino_temp::FileHandler::writeLog(String logfileName,
                                          String logmessage) {
   // open file for appending new blank line to EOF.
-  File f = LittleFS.open(logfileName, "a");
+  File f = LittleFS.open(logfileName, "w");
+
   f.print(logmessage);
   f.print('\n');
   f.flush();
@@ -176,12 +175,16 @@ void arduino_temp::FileHandler::writeLog(String logfileName,
 }
 
 void arduino_temp::FileHandler::printFileToSerial(String fileName) {
-  Serial.println("------------------------------------------------------");
+  Serial.println(
+      "************************************************************************"
+      "************************************");
 
   File f = LittleFS.open(fileName, "r");
   if (!f) {
     Serial.println("file \"" + fileName + "\" open failed");
-    Serial.println("------------------------------------------------------");
+    Serial.println(
+        "**********************************************************************"
+        "**************************************");
     return;
   }
 
@@ -192,7 +195,9 @@ void arduino_temp::FileHandler::printFileToSerial(String fileName) {
     Serial.println(line);
   }
   f.close();
-  Serial.println("------------------------------------------------------");
+  Serial.println(
+      "************************************************************************"
+      "************************************");
 }
 
 void arduino_temp::FileHandler::copyFile(String sourceFilename,

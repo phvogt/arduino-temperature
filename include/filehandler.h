@@ -20,8 +20,17 @@ class FileHandler {
   // NTP to get time for logging
   NTP ntp_;
 
- public:
   FileHandler(boolean log_enabled = LOG_ENABLED);
+  FileHandler(FileHandler const&);     // Don't Implement
+  void operator=(FileHandler const&);  // Don't implement
+
+ public:
+  static FileHandler& getInstance() {
+    // Guaranteed to be destroyed.
+    // Instantiated on first use.
+    static FileHandler instance;
+    return instance;
+  }
 
   // Sets if the log should be enabled (true) or not (false)
   // parameters:
@@ -112,9 +121,10 @@ class FileHandler {
   void doLogInfoDoubleLine();
 
   // Dumps the content of the log buffer to the log file.
-  // parameters: none
+  // parameters:
+  //   logfileName ... base name of the log file
   // returns nothing
-  void dumpLogBuffer();
+  void dumpLogBuffer(String logfileName);
 
   // Write to log file.
   // parameters:

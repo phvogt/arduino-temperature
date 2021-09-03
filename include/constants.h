@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include <DHT.h>
+
 // contains constants
 
 // ---------------------------------------------------
@@ -20,13 +21,8 @@ const int WORK_MODE_PRINT_FILE = 4;
 // debug mode: upload the log file
 const int WORK_MODE_FTPUPLOAD = 5;
 
-// what the program should do
-// const int WORK_MODE = WORK_MODE_NORMAL;
-const int WORK_MODE = WORK_MODE_NORMAL;
-
 // constants for communication
-#define BAUDRATE 115200
-//#define BAUDRATE 74880
+#define BAUDRATE 921600
 
 // ---------------------------------------------------
 // MQTT
@@ -65,12 +61,11 @@ const boolean DHT_SIMULATE_VALUES = false;
 // ---------------------------------------------------
 // Filehandler
 
-const boolean LOG_ENABLED = true;
-
+// directory to store logfiles
 const String LOGFILE_DIRECTORY = "/";
 
 // name of the logfile to use
-const String LOGFILE_NAME = "/temperature.log";
+const String LOGFILE_NAME = "temp.log";
 
 // file name extension of the last good run
 const String LOGFILE_LASTGOOD_EXTENSION = ".lastgood";

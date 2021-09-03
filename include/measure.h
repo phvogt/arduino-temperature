@@ -3,8 +3,6 @@
 #include <Arduino.h>
 #include <DHT.h>
 
-#include "filehandler.h"
-
 // measured values from DHT
 struct measured_values_dht {
   boolean couldReadValues;
@@ -23,9 +21,6 @@ namespace arduino_temp {
 // Measure with the sensor.
 class Measure {
  private:
-  // file handler
-  FileHandler filehandler_;
-
   // reference to the DHT sensor
   DHT dht_;
 

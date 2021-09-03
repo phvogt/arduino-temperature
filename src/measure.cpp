@@ -2,15 +2,13 @@
 
 #include "config.h"
 #include "constants.h"
+#include "filehandler.h"
 
-arduino_temp::Measure::Measure()
-    : filehandler_(LOG_ENABLED), dht_(DHTPIN, DHTTYPE) {
-  ;
-}
+arduino_temp::Measure::Measure() : dht_(DHTPIN, DHTTYPE) { ; }
 
 void arduino_temp::Measure::initDHT() {
-  filehandler_.doLogInfoLine();
-  filehandler_.doLogInfo("Init DHT");
+  FileHandler::getInstance().doLogInfoLine();
+  FileHandler::getInstance().doLogInfo("Init DHT");
   dht_.begin();
 }
 
@@ -18,8 +16,9 @@ void arduino_temp::Measure::initDHT() {
 // parameters: none
 // returns the struct with the measured values from the DHT
 measured_values_dht arduino_temp::Measure::measureDHTTempAndHumidity() {
-  filehandler_.doLogInfoLine();
-  filehandler_.doLogInfo("Collecting temp / hum for room: " + MQTT_ROOM);
+  FileHandler::getInstance().doLogInfoLine();
+  FileHandler::getInstance().doLogInfo("Collecting temp / hum for room: " +
+                                       MQTT_ROOM);
 
   // measure temperature / humidity
   struct measured_values_dht measuredValuesDht =
@@ -27,7 +26,7 @@ measured_values_dht arduino_temp::Measure::measureDHTTempAndHumidity() {
                                            DHT_MAX_READ_VALUES_RETRIES,
                                            DHT_DELAY_IN_MILLIS);
   if (!measuredValuesDht.couldReadValues) {
-    filehandler_.doLogWarn("Failed to read from DHT sensor!");
+    FileHandler::getInstance().doLogWarn("Failed to read from DHT sensor!");
   }
   return measuredValuesDht;
 }
@@ -60,7 +59,7 @@ measured_values_dht arduino_temp::Measure::getAndSendTemperatureAndHumidityData(
 
       // Check if any reads failed and exit early (to try again).
       if (isnan(measuredValues.hum) && isnan(measuredValues.temp)) {
-        filehandler_.doLogWarn("Failed to read from DHT sensor!");
+        FileHandler::getInstance().doLogWarn("Failed to read from DHT sensor!");
         triedToReadTimes++;
         delay(dhtRetryDelayInMillis);
       } else {
@@ -72,9 +71,9 @@ measured_values_dht arduino_temp::Measure::getAndSendTemperatureAndHumidityData(
   String temperature = String(measuredValues.temp);
   String humidity = String(measuredValues.hum);
 
-  filehandler_.doLogInfo("Temperature: " + temperature +
-                         " *C, Humidity: " + humidity);
-  filehandler_.doLogInfoLine();
+  FileHandler::getInstance().doLogInfo("Temperature: " + temperature +
+                                       " *C, Humidity: " + humidity);
+  FileHandler::getInstance().doLogInfoLine();
 
   return measuredValues;
 }
@@ -82,8 +81,8 @@ measured_values_dht arduino_temp::Measure::getAndSendTemperatureAndHumidityData(
 measured_values_bat arduino_temp::Measure::measureBatteryValues() {
   struct measured_values_bat measuredValues;
 
-  filehandler_.doLogInfoLine();
-  filehandler_.doLogInfo("Checking battery");
+  FileHandler::getInstance().doLogInfoLine();
+  FileHandler::getInstance().doLogInfo("Checking battery");
 
   // factor for calculating battery voltage
   // voltage divider: 1 volt = 1024, divider is
@@ -96,12 +95,14 @@ measured_values_bat arduino_temp::Measure::measureBatteryValues() {
   // calculate the battery
   measuredValues.battV = (double)measuredValues.batt / 1023.0 * batteryFactor;
 
-  filehandler_.doLogInfo("  batt: " + String(measuredValues.batt));
-  filehandler_.doLogInfo("  batteryFactor: " + String(batteryFactor));
-  filehandler_.doLogInfo("  battV: " + String(measuredValues.battV));
+  FileHandler::getInstance().doLogInfo("  batt: " +
+                                       String(measuredValues.batt));
+  FileHandler::getInstance().doLogInfo("  batteryFactor: " +
+                                       String(batteryFactor));
+  FileHandler::getInstance().doLogInfo("  battV: " +
+                                       String(measuredValues.battV));
 
-  filehandler_.doLogInfoLine();
-
+  FileHandler::getInstance().doLogInfoLine();
 
   return measuredValues;
 }

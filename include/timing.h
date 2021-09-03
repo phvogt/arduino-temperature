@@ -2,15 +2,10 @@
 
 #include <Arduino.h>
 
-#include "filehandler.h"
-
 namespace arduino_temp {
 
 class Timing {
  private:
-  // file handler
-  FileHandler filehandler_;
-
   // for measuring timing
   unsigned long timingStart_ = 0;
 

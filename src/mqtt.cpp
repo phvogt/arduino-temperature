@@ -1,6 +1,7 @@
 #include "mqtt.h"
 
 #include "constants.h"
+#include "filehandler.h"
 
 // parameters:
 //   host ... MQTT host
@@ -11,8 +12,7 @@
 //   mqttConnectRetryDelayInMillis ... delay in milliseconds between retries
 arduino_temp::MQTT::MQTT(String host, const int port, String username,
                          String password, int maxMqttConnectionRetries,
-                         unsigned long mqttConnectRetryDelayInMillis)
-    : filehandler_(LOG_ENABLED) {
+                         unsigned long mqttConnectRetryDelayInMillis) {
   host_ = (char *)malloc(host.length() + 1);
   host.toCharArray(host_, host.length() + 1);
 
@@ -38,32 +38,33 @@ arduino_temp::MQTT::~MQTT() {
 // parameters: none
 // returns the MQTT connection status
 boolean arduino_temp::MQTT::setupMQTT() {
-  filehandler_.doLogInfoLine();
-  filehandler_.doLogInfo("setup MQTT");
-  filehandler_.doLogInfoLine();
-  filehandler_.doLogInfo("MQTT connecting to " + String(host_) + ":" + port_);
+  FileHandler::getInstance().doLogInfoLine();
+  FileHandler::getInstance().doLogInfo("setup MQTT");
+  FileHandler::getInstance().doLogInfoLine();
+  FileHandler::getInstance().doLogInfo("MQTT connecting to " + String(host_) +
+                                       ":" + port_);
 
   mqttClient_.begin(host_, port_, mqttNet_);
 
-  filehandler_.doLogInfo("connecting...");
+  FileHandler::getInstance().doLogInfo("connecting...");
 
   int mqttWifiCount = 0;
   while (!mqttClient_.connect(host_, username_, password_) &&
          (mqttWifiCount < maxMqttConnectionRetries_)) {
-    filehandler_.doLogInfo(".");
+    FileHandler::getInstance().doLogInfo(".");
     delay(mqttConnectRetryDelayInMillis_);
     mqttWifiCount++;
   }
-  filehandler_.doLogInfo("");
+  FileHandler::getInstance().doLogInfo("");
 
   boolean isMqttConnected = mqttClient_.connected();
 
   if (isMqttConnected) {
-    filehandler_.doLogInfo("MQTT connected");
+    FileHandler::getInstance().doLogInfo("MQTT connected");
   } else {
-    filehandler_.doLogWarn("MQTT not connected!");
+    FileHandler::getInstance().doLogWarn("MQTT not connected!");
   }
-  filehandler_.doLogInfoLine();
+  FileHandler::getInstance().doLogInfoLine();
 
   return isMqttConnected;
 }
@@ -73,8 +74,9 @@ boolean arduino_temp::MQTT::setupMQTT() {
 // topic ... topic
 // message ... message
 void arduino_temp::MQTT::sendMqtt(String topic, String message) {
-  filehandler_.doLogInfo("MQTT sending: to \"" + topic + "\": \"" + message +
-                         "\" (length: " + message.length() + ")");
+  FileHandler::getInstance().doLogInfo("MQTT sending: to \"" + topic +
+                                       "\": \"" + message +
+                                       "\" (length: " + message.length() + ")");
 
   // only send message, if connected
   if (mqttClient_.connected()) {
@@ -93,10 +95,10 @@ void arduino_temp::MQTT::sendMqtt(String topic, String message) {
         mqttClient_.publish(c_topic, c_message, message.length());
 
     if (returnstatus != 1) {
-      filehandler_.doLogInfo("  not sent! returnstatus = " +
-                             String(returnstatus));
+      FileHandler::getInstance().doLogInfo("  not sent! returnstatus = " +
+                                           String(returnstatus));
     }
   } else {
-    filehandler_.doLogWarn("  not connected, so not sending.");
+    FileHandler::getInstance().doLogWarn("  not connected, so not sending.");
   }
 }

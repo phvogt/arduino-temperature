@@ -4,10 +4,10 @@
 
 #include "config.h"
 #include "constants.h"
+#include "filehandler.h"
 
 arduino_temp::Program::Program()
-    : filehandler_(LOG_ENABLED),
-      mqtt_(MQTT_HOST, MQTT_PORT, MQTT_USERNAME, MQTT_PASSWORD,
+    : mqtt_(MQTT_HOST, MQTT_PORT, MQTT_USERNAME, MQTT_PASSWORD,
             MQTT_MAX_RETRIES, MQTT_CONNECT_RETRY_DELAY_IN_MILLIS),
       wifi_(WIFI_SSID, WIFI_SSID_PASSWORD, WIFI_MAX_RETRIES,
             WIFI_CONNECT_RETRY_DELAY_IN_MILLIS, WIFI_RETRY_RESET_COUNT),
@@ -26,51 +26,64 @@ void arduino_temp::Program::setup() {
   Serial.println();
 
   // initially turn off wifi
-  filehandler_.doLogInfoDoubleLine();
-  filehandler_.doLogInfo("Turning Wifi off");
+  FileHandler::getInstance().doLogInfoDoubleLine();
+  FileHandler::getInstance().doLogInfo("Turning Wifi off");
   wifi_.initWifiOff();
 
-  filehandler_.doLogInfo("Starting with work mode: " + String(WORK_MODE));
-  filehandler_.doLogInfoLine();
-
-  if (WORK_MODE != WORK_MODE_NORMAL) {
-    filehandler_.startFS();
-  }
+  FileHandler::getInstance().doLogInfo("Starting with work mode: " +
+                                       String(WORK_MODE));
+  FileHandler::getInstance().doLogInfoLine();
 
   boolean connected = false;
 
   switch (WORK_MODE) {
     case WORK_MODE_NORMAL:
+      if (LOG_ENABLED) {
+        FileHandler::getInstance().startFS();
+      }
       doWorkNormal();
-      break;
-    case WORK_MODE_LIST_DIRECTORY:
-      filehandler_.listDirectory(LOGFILE_DIRECTORY);
-      break;
-    case WORK_MODE_PRINT_LOGFILES:
-      filehandler_.printLogfiles(LOGFILE_NAME, LOGFILE_MAX_BACKUPS);
-      break;
-    case WORK_MODE_DELETE_LOGFILES:
-      filehandler_.deleteLogfiles(LOGFILE_DIRECTORY, LOGFILE_NAME);
-      break;
-    case WORK_MODE_PRINT_FILE:
-      filehandler_.printFileToSerial(PRINT_FILE_NAME);
-      break;
-    case WORK_MODE_FTPUPLOAD:
-      connected = wifi_.connectWifi();
-      if (connected) {
-        ftp_.ftpUploadFile(LOGFILE_NAME);
+      if (LOG_ENABLED) {
+        FileHandler::getInstance().stopFS();
       }
       break;
+    case WORK_MODE_LIST_DIRECTORY:
+      FileHandler::getInstance().startFS();
+      FileHandler::getInstance().listDirectory(LOGFILE_DIRECTORY);
+      FileHandler::getInstance().stopFS();
+      break;
+    case WORK_MODE_PRINT_LOGFILES:
+      FileHandler::getInstance().startFS();
+      FileHandler::getInstance().printLogfiles(LOGFILE_DIRECTORY + LOGFILE_NAME,
+                                               LOGFILE_MAX_BACKUPS);
+      FileHandler::getInstance().stopFS();
+      break;
+    case WORK_MODE_DELETE_LOGFILES:
+      FileHandler::getInstance().startFS();
+      FileHandler::getInstance().deleteLogfiles(LOGFILE_DIRECTORY,
+                                                LOGFILE_NAME);
+      FileHandler::getInstance().stopFS();
+      break;
+    case WORK_MODE_PRINT_FILE:
+      FileHandler::getInstance().startFS();
+      FileHandler::getInstance().printFileToSerial(PRINT_FILE_NAME);
+      FileHandler::getInstance().stopFS();
+      break;
+    case WORK_MODE_FTPUPLOAD:
+      FileHandler::getInstance().startFS();
+      connected = wifi_.connectWifi();
+      if (connected) {
+        ftp_.ftpUploadFile(LOGFILE_DIRECTORY + LOGFILE_NAME);
+      }
+      FileHandler::getInstance().stopFS();
+      break;
     default:
-      filehandler_.doLogError("unknown work mode: " + String(WORK_MODE));
-      filehandler_.doLogInfo("going to sleep");
+      FileHandler::getInstance().doLogError("unknown work mode: " +
+                                            String(WORK_MODE));
+      FileHandler::getInstance().doLogInfo("going to sleep");
       break;
   }
 
-  if (WORK_MODE != WORK_MODE_NORMAL) {
-    filehandler_.stopFS();
-    coreFunctions_.sleepMaxTime();
-  }
+  coreFunctions_.sleepMaxTime();
 }
 
 void arduino_temp::Program::loop() {
@@ -83,8 +96,8 @@ void arduino_temp::Program::setStartMillis(unsigned long startMillis) {
 }
 
 void arduino_temp::Program::doWorkNormal() {
-  filehandler_.doLogInfoDoubleLine();
-  filehandler_.doLogInfo("Starting work at: " + String(millis()));
+  FileHandler::getInstance().doLogInfoDoubleLine();
+  FileHandler::getInstance().doLogInfo("Starting work at: " + String(millis()));
 
   timing_.timingStart();
   const String resetReason = coreFunctions_.determineResetReason();
@@ -113,11 +126,11 @@ void arduino_temp::Program::doWorkNormal() {
     timing_.timingEnd("MQI");
   } else {
     wifi_.stopWifiForSleep();
-    filehandler_.startFS();
-    filehandler_.deleteFile(LOGFILE_NAME);
-    dumpLog();
-    filehandler_.setLogEnabled(true);
-    renameLogLastBad();
+    if (LOG_ENABLED) {
+      rotateLogs(LOGFILE_DIRECTORY + LOGFILE_NAME);
+      dumpLog(LOGFILE_DIRECTORY + LOGFILE_NAME);
+      dumpLog(LOGFILE_DIRECTORY + LOGFILE_NAME + LOGFILE_LASTBAD_EXTENSION);
+    }
     coreFunctions_.sleepMaxTime();
   }
 
@@ -129,35 +142,36 @@ void arduino_temp::Program::doWorkNormal() {
   sendMQTTTimings();
   delay(50);
 
-  // don't log if everything went fine
-  // startFS();
-  // rotateLogs();
-  // dumpLog();
-  // global_log_enabled = true;
-  // renameLogGood();
-  // stopFS();
-
   wifi_.stopWifiForSleep();
 
-  filehandler_.doLogInfoLine();
-  filehandler_.doLogInfo("done, going to sleep");
+  FileHandler::getInstance().doLogInfoLine();
 
-  filehandler_.doLogInfoDoubleLine();
+  if (LOG_ENABLED) {
+    rotateLogs(LOGFILE_DIRECTORY + LOGFILE_NAME);
+    dumpLog(LOGFILE_DIRECTORY + LOGFILE_NAME);
+    dumpLog(LOGFILE_DIRECTORY + LOGFILE_NAME + LOGFILE_LASTGOOD_EXTENSION);
+    FileHandler::getInstance().stopFS();
+    FileHandler::getInstance().doLogInfoLine();
+  }
+
+  FileHandler::getInstance().doLogInfo("done, going to sleep");
+
+  FileHandler::getInstance().doLogInfoDoubleLine();
 
   coreFunctions_.doSleepForMicros(sleepTimeInMicros);
 }
 
 time_t arduino_temp::Program::initNTP() {
-  filehandler_.doLogInfoLine();
-  filehandler_.doLogInfo("getting NTP");
+  FileHandler::getInstance().doLogInfoLine();
+  FileHandler::getInstance().doLogInfo("getting NTP");
 
   timing_.timingStart();
-  filehandler_.doLogInfo("  calling initNTP");
+  FileHandler::getInstance().doLogInfo("  calling initNTP");
   time_t currentEpoch = ntp_.initNTP();
-  filehandler_.doLogInfo("  setting time. currentEpoch = " +
-                         String(currentEpoch));
+  FileHandler::getInstance().doLogInfo("  setting time. currentEpoch = " +
+                                       String(currentEpoch));
   setTime(currentEpoch);
-  filehandler_.doLogInfoLine();
+  FileHandler::getInstance().doLogInfoLine();
   timing_.timingEnd("NTP");
 
   return currentEpoch;
@@ -167,8 +181,9 @@ void arduino_temp::Program::sendMQTTValues(
     const String& resetReason,
     const struct measured_values_bat& measuredValuesBatt,
     const struct measured_values_dht& measuredValuesDht) {
-  filehandler_.doLogInfoLine();
-  filehandler_.doLogInfo("Sending data via MQTT for room: " + MQTT_ROOM);
+  FileHandler::getInstance().doLogInfoLine();
+  FileHandler::getInstance().doLogInfo("Sending data via MQTT for room: " +
+                                       MQTT_ROOM);
 
   timing_.timingStart();
   // send all values
@@ -186,38 +201,39 @@ void arduino_temp::Program::sendMQTTValues(
     mqtt_.sendMqtt(MQTT_ROOM + "/temperature", String(measuredValuesDht.temp));
     mqtt_.sendMqtt(MQTT_ROOM + "/humidity", String(measuredValuesDht.hum));
   }
-  filehandler_.doLogInfoLine();
+  FileHandler::getInstance().doLogInfoLine();
   timing_.timingEnd("MQV");
 }
 
 long arduino_temp::Program::sendMQTTDuration(unsigned long startMillis) {
-  filehandler_.doLogInfoLine();
-  filehandler_.doLogInfo("Calculating duration");
+  FileHandler::getInstance().doLogInfoLine();
+  FileHandler::getInstance().doLogInfo("Calculating duration");
 
   timing_.timingStart();
   long wholeduration = millis() - startMillis;
-  filehandler_.doLogInfo("duration: " + String(wholeduration) + " ms");
+  FileHandler::getInstance().doLogInfo("duration: " + String(wholeduration) +
+                                       " ms");
   mqtt_.sendMqtt(MQTT_ROOM + "/duration", String(wholeduration));
-  filehandler_.doLogInfoLine();
+  FileHandler::getInstance().doLogInfoLine();
   timing_.timingEnd("MQD");
-  filehandler_.doLogInfoLine();
-  filehandler_.doLogTime("all: " + String(wholeduration));
+  FileHandler::getInstance().doLogInfoLine();
+  FileHandler::getInstance().doLogTime("all: " + String(wholeduration));
 
   return wholeduration;
 }
 
 void arduino_temp::Program::sendMQTTSleepTime(long sleepTimeInMicros) {
   timing_.timingStart();
-  filehandler_.doLogInfo("sleeping for microseconds: " +
-                         String(sleepTimeInMicros));
+  FileHandler::getInstance().doLogInfo("sleeping for microseconds: " +
+                                       String(sleepTimeInMicros));
   mqtt_.sendMqtt(MQTT_ROOM + "/sleepTime", String(sleepTimeInMicros / 1000));
-  filehandler_.doLogInfoLine();
+  FileHandler::getInstance().doLogInfoLine();
   timing_.timingEnd("MQS");
 }
 
 void arduino_temp::Program::sendMQTTTimings() {
-  filehandler_.doLogInfoLine();
-  filehandler_.doLogInfo("Sending timings");
+  FileHandler::getInstance().doLogInfoLine();
+  FileHandler::getInstance().doLogInfo("Sending timings");
 
   String timingsstr =
       timing_.getTimings() + ",A:" + String(millis() - startMillis_);
@@ -227,8 +243,8 @@ void arduino_temp::Program::sendMQTTTimings() {
 
 long arduino_temp::Program::calculateSleepTimeMicros(
     unsigned long startMillis) {
-  filehandler_.doLogInfoLine();
-  filehandler_.doLogInfo("Calculating sleep");
+  FileHandler::getInstance().doLogInfoLine();
+  FileHandler::getInstance().doLogInfo("Calculating sleep");
 
   // calculate sleeping time
   long sleepTimeInMicros = coreFunctions_.calcSleepTimeInMicroSeconds(
@@ -236,46 +252,24 @@ long arduino_temp::Program::calculateSleepTimeMicros(
   return sleepTimeInMicros;
 }
 
-void arduino_temp::Program::dumpLog() {
-  filehandler_.doLogInfoLine();
+void arduino_temp::Program::dumpLog(String logfileName) {
+  FileHandler::getInstance().doLogInfoLine();
 
-  filehandler_.doLogInfo("Dumping logfile");
+  FileHandler::getInstance().doLogInfo("Dumping logfile: " + logfileName);
   timing_.timingStart();
   // dump the current log buffer to the log file
-  filehandler_.dumpLogBuffer();
+  FileHandler::getInstance().dumpLogBuffer(logfileName);
   timing_.timingEnd("DUL");
 }
 
-void arduino_temp::Program::rotateLogs() {
-  filehandler_.doLogInfoLine();
-  filehandler_.doLogInfo(" Starting rotating files");
+void arduino_temp::Program::rotateLogs(String logfileName) {
+  FileHandler::getInstance().doLogInfoLine();
+  FileHandler::getInstance().doLogInfo(" Starting rotating files: " +
+                                       logfileName);
 
   timing_.timingStart();
   //	rotate log files
-  filehandler_.rotateLogfiles(LOGFILE_NAME, LOGFILE_MAX_BACKUPS);
-  filehandler_.doLogInfo("Done rotating files.");
-  timing_.timingEnd("RLOG");
-}
-
-void arduino_temp::Program::renameLogGood() {
-  filehandler_.doLogInfoLine();
-  filehandler_.doLogInfo("saving log file to " + LOGFILE_NAME +
-                         LOGFILE_LASTGOOD_EXTENSION);
-
-  timing_.timingStart();
-  filehandler_.renameFile(LOGFILE_NAME,
-                          LOGFILE_NAME + LOGFILE_LASTGOOD_EXTENSION);
-  timing_.timingEnd("LOG");
-}
-
-void arduino_temp::Program::renameLogLastBad() {
-  filehandler_.doLogInfoLine();
-  filehandler_.doLogInfo("rename logfile with last bad extension");
-
-  timing_.timingStart();
-  filehandler_.doLogInfo("saving log file to " + LOGFILE_NAME +
-                         LOGFILE_LASTBAD_EXTENSION);
-  filehandler_.renameFile(LOGFILE_NAME,
-                          LOGFILE_NAME + LOGFILE_LASTBAD_EXTENSION);
+  FileHandler::getInstance().rotateLogfiles(logfileName, LOGFILE_MAX_BACKUPS);
+  FileHandler::getInstance().doLogInfo("Done rotating files.");
   timing_.timingEnd("RLOG");
 }

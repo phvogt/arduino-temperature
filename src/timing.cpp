@@ -1,8 +1,9 @@
 #include "timing.h"
 
 #include "constants.h"
+#include "filehandler.h"
 
-arduino_temp::Timing::Timing() : filehandler_(LOG_ENABLED) {}
+arduino_temp::Timing::Timing() {}
 
 void arduino_temp::Timing::timingStart() { timingStart_ = millis(); }
 
@@ -10,7 +11,7 @@ unsigned long arduino_temp::Timing::timingEnd(String measuredName) {
   unsigned long duration = millis() - timingStart_;
   String logstring = measuredName + ": " + String(duration);
 
-  filehandler_.doLogTime(logstring);
+  FileHandler::getInstance().doLogTime(logstring);
 
   if (timings_ == "") {
     timings_ += logstring;

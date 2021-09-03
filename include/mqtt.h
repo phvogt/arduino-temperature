@@ -4,16 +4,11 @@
 #include <ESP8266WiFi.h>
 #include <MQTTClient.h>
 
-#include "filehandler.h"
-
 namespace arduino_temp {
 
 // MQTT client to transfer information.
 class MQTT {
  private:
-  // file handler
-  FileHandler filehandler_;
-
   // MQTT host
   char* host_;
   // MQTT port (1883 for no SSL or 8883 for SSL)

@@ -1,14 +1,22 @@
 #pragma once
 
 #include <Arduino.h>
+#include <ESP8266WiFi.h>
+
 #include "config_user.h"
 
 // // ---------------------------------------------------
-// // common configuration for every sensor in a network
+// // common configuration
+
+// // should the logging to the file be enabled?
+// const boolean LOG_ENABLED = true;
+
+// // what the program should do
+// const int WORK_MODE = WORK_MODE_NORMAL;
 
 // // ---------------------------------------------------
 // // sleep time in milliseconds
-// const int CORE_SLEEP_TIME_IN_MILLIS = 60000;
+// const int CORE_SLEEP_TIME_IN_MILLIS = 300000;
 
 // // ---------------------------------------------------
 // // WIFI

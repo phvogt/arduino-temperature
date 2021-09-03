@@ -12,9 +12,6 @@ namespace arduino_temp {
 // Transfer files via FTP
 class FTP {
  private:
-  // file handler
-  FileHandler filehandler_;
-
   // flag if debugging should be enabled (true) or not
   boolean debug_ = false;
 

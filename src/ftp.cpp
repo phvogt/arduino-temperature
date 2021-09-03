@@ -1,12 +1,10 @@
 #include "ftp.h"
 
 #include "LittleFS.h"
-
 #include "config.h"
 #include "constants.h"
 
-arduino_temp::FTP::FTP(IPAddress ftpserverip, uint16_t ftpport, boolean debug)
-    : filehandler_(LOG_ENABLED) {
+arduino_temp::FTP::FTP(IPAddress ftpserverip, uint16_t ftpport, boolean debug) {
   debug_ = debug;
   ftpserver_ = ftpserverip;
   ftpport_ = ftpport;

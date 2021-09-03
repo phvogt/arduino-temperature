@@ -8,10 +8,6 @@ namespace arduino_temp {
 
 // Provides ESPcore functionalities.
 class CoreFunctions {
- private:
-  // file handler
-  FileHandler filehandler_;
-
  public:
   // Get the reset reason.
   // parameters: none

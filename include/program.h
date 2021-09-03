@@ -3,7 +3,6 @@
 #include <Arduino.h>
 
 #include "corefunctions.h"
-#include "filehandler.h"
 #include "ftp.h"
 #include "measure.h"
 #include "mqtt.h"
@@ -15,11 +14,9 @@ namespace arduino_temp {
 // Program
 class Program {
  private:
-  // file handler
-  FileHandler filehandler_;  
   // timing
   Timing timing_;
-  
+
   // MQTT communication
   MQTT mqtt_;
   // Wifi client
@@ -87,16 +84,14 @@ class Program {
   long calculateSleepTimeMicros(unsigned long startMillis);
 
   // Dump the current log file buffer to the log file.
-  void dumpLog();
+  // parameters:
+  //   logfileName ... base name for log files
+  void dumpLog(String logfileName);
 
   // Rotate the log files.
-  void rotateLogs();
-
-  // Renames the log file with the last good extension.
-  void renameLogGood();
-
-  // Renames the log file with the last bad extension.
-  void renameLogLastBad();
+  // parameters:
+  //   logfileName ... base name for log files
+  void rotateLogs(String logfileName);
 };
 
 }  // namespace arduino_temp

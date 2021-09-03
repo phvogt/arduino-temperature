@@ -2,16 +2,11 @@
 
 #include <Arduino.h>
 
-#include "filehandler.h"
-
 namespace arduino_temp {
 
 // WIFI connection.
 class Wifi {
  private:
-  // file handler
-  FileHandler filehandler_;
-
   // contains the WIFI SSID.
   char *ssid_;
   // contains the WIFI password.

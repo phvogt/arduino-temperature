@@ -2,8 +2,9 @@
 
 #include <ESP8266WiFi.h>
 
-#include "constants.h"
 #include "config.h"
+#include "constants.h"
+#include "filehandler.h"
 
 // from
 // https://www.bakke.online/index.php/2017/06/24/esp8266-wifi-power-reduction-avoiding-network-scan/
@@ -22,7 +23,7 @@ struct RTCDATA rtcData;
 arduino_temp::Wifi::Wifi(String ssid, String password,
                          int maxWifiConnectionRetries,
                          unsigned long wifiConnectRetryDelayInMillis,
-                         int wifiConnectionRetryCountReset) : filehandler_(LOG_ENABLED) {
+                         int wifiConnectionRetryCountReset) {
   // convert parameters
   password_ = (char *)malloc(password.length() + 1);
   password.toCharArray(password_, password.length() + 1);
@@ -42,32 +43,36 @@ arduino_temp::Wifi::~Wifi() {
 int arduino_temp::Wifi::initWifi() {
   // We start by connecting to a WiFi network
 
-  filehandler_.doLogInfoLine();
-  filehandler_.doLogInfo("init Wifi");
+  FileHandler::getInstance().doLogInfoLine();
+  FileHandler::getInstance().doLogInfo("init Wifi");
 
-  filehandler_.doLogInfo("Wifi connecting to \"" + String(ssid_) + "\"");
+  FileHandler::getInstance().doLogInfo("Wifi connecting to \"" + String(ssid_) +
+                                       "\"");
   initWifiConfig();
 
   if (WIFI_RTC_ENABLED) {
-    filehandler_.doLogInfo("connecting with RTC");
+    FileHandler::getInstance().doLogInfo("connecting with RTC");
     boolean rtcValid = readWifiSettingsFromRTC();
-    filehandler_.doLogInfo("  rtcValid: " + String(rtcValid));
+    FileHandler::getInstance().doLogInfo("  rtcValid: " + String(rtcValid));
     if (rtcValid) {
       // The RTC data was good, make a quick connection
-      filehandler_.doLogInfo("  connecting with RTC-data");
+      FileHandler::getInstance().doLogInfo("  connecting with RTC-data");
       if (WiFi.status() != WL_CONNECTED) {
-        filehandler_.doLogInfo("  not connected, calling begin()");
+        FileHandler::getInstance().doLogInfo(
+            "  not connected, calling begin()");
         WiFi.begin(ssid_, password_, rtcData.channel, rtcData.bssid, true);
       } else {
-        filehandler_.doLogInfo("  already connected, not calling begin()");
+        FileHandler::getInstance().doLogInfo(
+            "  already connected, not calling begin()");
       }
     } else {
       // The RTC data was not valid, so make a regular connection
-      filehandler_.doLogInfo("  RTC invalid, connecting normally");
+      FileHandler::getInstance().doLogInfo(
+          "  RTC invalid, connecting normally");
       WiFi.begin(ssid_, password_);
     }
   } else {
-    filehandler_.doLogInfo("connecting without RTC");
+    FileHandler::getInstance().doLogInfo("connecting without RTC");
     WiFi.begin(ssid_, password_);
   }
 
@@ -79,12 +84,13 @@ int arduino_temp::Wifi::initWifi() {
   int connectionStatus = WiFi.status();
   while ((connectionStatus != WL_CONNECTED) &&
          (retryWifiCount <= maxWifiConnectionRetries_)) {
-    filehandler_.doLogInfo("  #" + String(retryWifiCount) +
-                           ", connectionStatus = " + String(connectionStatus));
+    FileHandler::getInstance().doLogInfo(
+        "  #" + String(retryWifiCount) +
+        ", connectionStatus = " + String(connectionStatus));
 
     // reset WiFi
     if (retryWifiCount % wifiConnectionRetryCountReset_ == 0) {
-      filehandler_.doLogInfo(
+      FileHandler::getInstance().doLogInfo(
           "  disconnecting / config / new start of the connection");
       WiFi.disconnect();
       delay(10);
@@ -98,31 +104,35 @@ int arduino_temp::Wifi::initWifi() {
     }
 
     retryWifiCount++;
-    //    filehandler_.doLogInfo( "  #" + String(retryWifiCount) + " sleeping");
+    //    FileHandler::getInstance().doLogInfo( "  #" + String(retryWifiCount) +
+    //    " sleeping");
     delay(wifiConnectRetryDelayInMillis_);
-    //    filehandler_.doLogInfo( "  #" + String(retryWifiCount) + " checking
-    //    status");
+    //    FileHandler::getInstance().doLogInfo( "  #" + String(retryWifiCount) +
+    //    " checking status");
     connectionStatus = WiFi.status();
   }
 
   // connected!
   if (connectionStatus == WL_CONNECTED) {
-    filehandler_.doLogInfo("WiFi connected. storing Wifi settings in RTC");
+    FileHandler::getInstance().doLogInfo(
+        "WiFi connected. storing Wifi settings in RTC");
     // store settings in RTC memory
     storeWifiSettingsInRTC();
-    filehandler_.doLogInfo("WiFi connected. storing Wifi settings in RTC done");
+    FileHandler::getInstance().doLogInfo(
+        "WiFi connected. storing Wifi settings in RTC done");
     // log IP
     IPAddress localip = WiFi.localIP();
     String slocalip = localip.toString();
-    filehandler_.doLogInfo("WiFi connected. IP address: " + slocalip);
+    FileHandler::getInstance().doLogInfo("WiFi connected. IP address: " +
+                                         slocalip);
   } else {
-    filehandler_.doLogWarn("WiFi not connected! connectionStatus = " +
-                           String(connectionStatus));
+    FileHandler::getInstance().doLogWarn(
+        "WiFi not connected! connectionStatus = " + String(connectionStatus));
   }
 
   wifiMillis = millis() - startMillis;
 
-  filehandler_.doLogInfoLine();
+  FileHandler::getInstance().doLogInfoLine();
 
   return connectionStatus;
 }
@@ -131,8 +141,8 @@ int arduino_temp::Wifi::initWifi() {
 // parameters: none
 // returns connection status
 boolean arduino_temp::Wifi::connectWifi() {
-  filehandler_.doLogInfoLine();
-  filehandler_.doLogInfo("Connecting WIFI");
+  FileHandler::getInstance().doLogInfoLine();
+  FileHandler::getInstance().doLogInfo("Connecting WIFI");
 
   // int wifiConnectionStatus = initWifi(WIFI_SSID, WIFI_SSID_PASSWORD,
   // 		WIFI_MAX_RETRIES, WIFI_CONNECT_RETRY_DELAY_IN_MILLIS,
@@ -156,28 +166,28 @@ void arduino_temp::Wifi::initWifiOff() {
 // parameters: none
 // returns nothing
 void arduino_temp::Wifi::initWifiConfig() {
-  filehandler_.doLogInfo("initWifiConfig():");
+  FileHandler::getInstance().doLogInfo("initWifiConfig():");
   WiFi.forceSleepWake();
   delay(1);
   WiFi.persistent(false);
   boolean wifiStaSuccess = WiFi.mode(WIFI_STA);
-  filehandler_.doLogInfo("  Wi-Fi mode set to WIFI_STA " +
-                         String(wifiStaSuccess));
+  FileHandler::getInstance().doLogInfo("  Wi-Fi mode set to WIFI_STA " +
+                                       String(wifiStaSuccess));
 
   // using static mode?
   if (WIFI_STATIC) {
-    filehandler_.doLogInfo("using static connection");
-    filehandler_.doLogInfo("  ip: " + String(WIFI_IP[0]) + "." +
-                           String(WIFI_IP[1]) + "." + String(WIFI_IP[2]) + "." +
-                           String(WIFI_IP[3]));
-    filehandler_.doLogInfo("  dns: " + String(WIFI_DNS[0]) + "." +
-                           String(WIFI_DNS[1]) + "." + String(WIFI_DNS[2]) +
-                           "." + String(WIFI_DNS[3]));
-    filehandler_.doLogInfo("  gateway: " + String(WIFI_GATEWAY[0]) + "." +
-                           String(WIFI_GATEWAY[1]) + "." +
-                           String(WIFI_GATEWAY[2]) + "." +
-                           String(WIFI_GATEWAY[3]));
-    filehandler_.doLogInfo(
+    FileHandler::getInstance().doLogInfo("using static connection");
+    FileHandler::getInstance().doLogInfo(
+        "  ip: " + String(WIFI_IP[0]) + "." + String(WIFI_IP[1]) + "." +
+        String(WIFI_IP[2]) + "." + String(WIFI_IP[3]));
+    FileHandler::getInstance().doLogInfo(
+        "  dns: " + String(WIFI_DNS[0]) + "." + String(WIFI_DNS[1]) + "." +
+        String(WIFI_DNS[2]) + "." + String(WIFI_DNS[3]));
+    FileHandler::getInstance().doLogInfo(
+        "  gateway: " + String(WIFI_GATEWAY[0]) + "." +
+        String(WIFI_GATEWAY[1]) + "." + String(WIFI_GATEWAY[2]) + "." +
+        String(WIFI_GATEWAY[3]));
+    FileHandler::getInstance().doLogInfo(
         "  subnet: " + String(WIFI_SUBNET[0]) + "." + String(WIFI_SUBNET[1]) +
         "." + String(WIFI_SUBNET[2]) + "." + String(WIFI_SUBNET[3]));
 
@@ -192,7 +202,7 @@ void arduino_temp::Wifi::initWifiConfig() {
     // https://www.bakke.online/index.php/2017/05/22/reducing-wifi-power-consumption-on-esp8266-part-3/
     WiFi.config(ip, gateway, subnet, dns, dns);
   } else {
-    filehandler_.doLogInfo("using dhcp connection");
+    FileHandler::getInstance().doLogInfo("using dhcp connection");
     WiFi.hostname(WIFI_HOSTNAME);
   }
 }
@@ -206,17 +216,17 @@ void arduino_temp::Wifi::stopWifiForSleep() {
 boolean arduino_temp::Wifi::readWifiSettingsFromRTC() {
   // Try to read WiFi settings from RTC memory
   boolean rtcValid = false;
-  filehandler_.doLogInfo("RTC reading");
+  FileHandler::getInstance().doLogInfo("RTC reading");
   if (ESP.rtcUserMemoryRead(0, (uint32_t *)&rtcData, sizeof(rtcData))) {
     // Calculate the CRC of what we just read from RTC memory, but skip the
     // first 4 bytes as that's the checksum itself.
     uint32_t crc =
         calculateCRC32(((uint8_t *)&rtcData) + 4, sizeof(rtcData) - 4);
-    filehandler_.doLogInfo("  read. crc = " + String(crc) +
-                           " oldcrc = " + String(rtcData.crc32));
+    FileHandler::getInstance().doLogInfo("  read. crc = " + String(crc) +
+                                         " oldcrc = " + String(rtcData.crc32));
     if (crc == rtcData.crc32) {
       rtcValid = true;
-      filehandler_.doLogInfo(
+      FileHandler::getInstance().doLogInfo(
           "channel = " + String(rtcData.channel) +
           " BSSID = " + String(rtcData.bssid[0], HEX) + ":" +
           String(rtcData.bssid[1], HEX) + ":" + String(rtcData.bssid[2], HEX) +
@@ -225,7 +235,7 @@ boolean arduino_temp::Wifi::readWifiSettingsFromRTC() {
     }
   }
 
-  filehandler_.doLogInfo("  rtcValid = " + String(rtcValid));
+  FileHandler::getInstance().doLogInfo("  rtcValid = " + String(rtcValid));
 
   return rtcValid;
 }
@@ -239,7 +249,7 @@ void arduino_temp::Wifi::storeWifiSettingsInRTC() {
       calculateCRC32(((uint8_t *)&rtcData) + 4, sizeof(rtcData) - 4);
   ESP.rtcUserMemoryWrite(0, (uint32_t *)&rtcData, sizeof(rtcData));
 
-  filehandler_.doLogInfo(
+  FileHandler::getInstance().doLogInfo(
       "channel = " + String(rtcData.channel) +
       " BSSID = " + String(rtcData.bssid[0], HEX) + ":" +
       String(rtcData.bssid[1], HEX) + ":" + String(rtcData.bssid[2], HEX) +
