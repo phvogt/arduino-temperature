@@ -6,23 +6,23 @@
 #include "ftp.h"
 #include "measure.h"
 #include "mqtt.h"
+#include "ntp.h"
 #include "timing.h"
 #include "wifi.h"
 
 namespace arduino_temp {
 
-// Program
+// Program.
 class Program {
  private:
   // timing
   Timing timing_;
-
+  // NTP client
+  NTP ntp_;
   // MQTT communication
   MQTT mqtt_;
   // Wifi client
   Wifi wifi_;
-  // NTP client
-  NTP ntp_;
   // Core functions
   CoreFunctions coreFunctions_;
   // measurement of temperature / humidity
@@ -34,6 +34,8 @@ class Program {
   unsigned long startMillis_ = 0;
 
  public:
+  // Constructor.
+  // parameters: none
   Program();
 
   // do the setup
@@ -45,12 +47,16 @@ class Program {
   // Sets the milli seconds since start
   // parameters:
   //   startMillis ... the milli seconds since start
+  // returns nothing
   void setStartMillis(unsigned long startMillis);
 
   // Do the normal work.
+  // parameters: none
+  // returns nothing
   void doWorkNormal();
 
   // Initializes the NTP.
+  // parameters: none
   // returns the current time as epoch
   time_t initNTP();
 
@@ -59,6 +65,7 @@ class Program {
   //   resetReason ... the reset reason
   //   measured_values_bat ... the measured value for the battery
   //   measured_values_dht ... the measured value with MQTT
+  // returns the current time as epoch
   void sendMQTTValues(const String& resetReason,
                       const struct measured_values_bat& measuredValuesBatt,
                       const struct measured_values_dht& measuredValuesDht);
@@ -72,9 +79,12 @@ class Program {
   // Sends the sleep time in milliseconds.
   // parameters:
   //   sleepTimeInMicros ... the sleep time in microseconds
+  // returns the current time as epoch
   void sendMQTTSleepTime(long sleepTimeInMicros);
 
   // Send the timings via MQTT.
+  // parameters: none
+  // returns nothing
   void sendMQTTTimings();
 
   // Calculates the time to sleep.
@@ -86,11 +96,13 @@ class Program {
   // Dump the current log file buffer to the log file.
   // parameters:
   //   logfileName ... base name for log files
+  // returns nothing
   void dumpLog(String logfileName);
 
   // Rotate the log files.
   // parameters:
   //   logfileName ... base name for log files
+  // returns nothing
   void rotateLogs(String logfileName);
 };
 

@@ -4,6 +4,7 @@
 
 namespace arduino_temp {
 
+// Timing of events.
 class Timing {
  private:
   // for measuring timing
@@ -13,6 +14,7 @@ class Timing {
   String timings_ = "";
 
  public:
+  // Constructor.
   Timing();
 
   // Starts the timing measuring.

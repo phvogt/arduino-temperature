@@ -3,19 +3,15 @@
 #include <Arduino.h>
 #include <TimeLib.h>
 
-#include "config.h"
-#include "constants.h"
-
-arduino_temp::NTP::NTP(const char* ntpServer, int ntpTimeOffset,
-                       int ntpUpdateInterval)
-    : ntpUDP_(),
-      timeClient_(ntpUDP_, ntpServer, ntpTimeOffset, ntpUpdateInterval) {
-  ;
-};
+arduino_temp::NTP::NTP(NTPConfig ntpConfig)
+    : ntpConfig_(ntpConfig),
+      ntpUDP_(),
+      timeClient_(ntpUDP_, ntpConfig.server, ntpConfig.timeOffset,
+                  ntpConfig.updateInterval){};
 
 time_t arduino_temp::NTP::initNTP() {
   timeClient_.begin();
-  time_t currentEpoch = getNtpTime(NTP_MAX_RETRIES, NTP_RETRY_DELAY_IN_MILLIS);
+  time_t currentEpoch = getNtpTime();
   return currentEpoch;
 }
 
@@ -35,8 +31,7 @@ String arduino_temp::NTP::toStringLeadingZero(int value) {
   }
 }
 
-time_t arduino_temp::NTP::getNtpTime(int maxNtpRetries,
-                                     unsigned long ntpRetryDelayInMillis) {
+time_t arduino_temp::NTP::getNtpTime() {
   timeClient_.update();
 
   int retryNtpCount = 1;
@@ -46,9 +41,9 @@ time_t arduino_temp::NTP::getNtpTime(int maxNtpRetries,
   epoch = timeClient_.getEpochTime();
 
   // values below 1000 are not realistic
-  while ((epoch < 1000) && (retryNtpCount <= maxNtpRetries)) {
+  while ((epoch < 1000) && (retryNtpCount <= ntpConfig_.connectionMaxRetries)) {
     retryNtpCount++;
-    delay(ntpRetryDelayInMillis);
+    delay(ntpConfig_.connectionRetryDelayInMillis);
     timeClient_.update();
     epoch = timeClient_.getEpochTime();
   }

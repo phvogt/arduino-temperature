@@ -1,3 +1,4 @@
+#include "config.h"
 #include "program.h"
 
 arduino_temp::Program program_;

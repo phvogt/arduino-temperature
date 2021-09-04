@@ -1,14 +1,14 @@
 #include "filehandler.h"
 
 #include "LittleFS.h"
-#include "ntp.h"
+#include "config.h"
 
-arduino_temp::FileHandler::FileHandler(boolean log_enabled) : ntp_() {
-  log_enabled_ = log_enabled;
-}
+arduino_temp::Config configForNtp;
 
-void arduino_temp::FileHandler::setLogEnabled(boolean log_enabled) {
-  log_enabled_ = log_enabled;
+arduino_temp::FileHandler::FileHandler() : ntp_(configForNtp.NTP_CONFIG) {}
+
+void arduino_temp::FileHandler::setLogEnabled(boolean logEnabled) {
+  logEnabled_ = logEnabled;
 }
 
 void arduino_temp::FileHandler::startFS() {
@@ -44,11 +44,6 @@ String arduino_temp::FileHandler::getLogfileBackupName(String logfileName,
   return logfileName + "." + String(num);
 }
 
-// Rotate the log files.
-// parameters:
-//   logfileName ... base name for log files
-//   maxBackup ... maximum backups
-// returns nothing
 void arduino_temp::FileHandler::rotateLogfiles(String logfileName,
                                                int maxBackup) {
   Serial.println("rotating log files: " + logfileName);
@@ -125,7 +120,7 @@ void arduino_temp::FileHandler::doLog(String logLevel, String message) {
                    logLevel + ": " + message;
   Serial.println(logLine);
 
-  if (log_enabled_) {
+  if (logEnabled_) {
     if (logBuffer_ == "") {
       logBuffer_ += logLine;
     } else {

@@ -6,13 +6,15 @@
 #include "constants.h"
 #include "filehandler.h"
 
+arduino_temp::Config config;
+
 arduino_temp::Program::Program()
-    : mqtt_(MQTT_HOST, MQTT_PORT, MQTT_USERNAME, MQTT_PASSWORD,
-            MQTT_MAX_RETRIES, MQTT_CONNECT_RETRY_DELAY_IN_MILLIS),
-      wifi_(WIFI_SSID, WIFI_SSID_PASSWORD, WIFI_MAX_RETRIES,
-            WIFI_CONNECT_RETRY_DELAY_IN_MILLIS, WIFI_RETRY_RESET_COUNT),
-      ntp_(NTP_SERVER, NTP_TIME_OFFSET, NTP_UPDATE_INTERVAL),
-      ftp_(FTP_SERVER_IP_ADDRESS, FTP_SERVER_PORT, FTP_DEBUG_ENABLED) {}
+    : ntp_(config.NTP_CONFIG),
+      mqtt_(config.MQTT_CONFIG),
+      wifi_(config.WIFI_CONFIG),
+      coreFunctions_(config.COREFUNCTIONS_CONFIG),
+      measure_(config.MEASURE_CONFIG),
+      ftp_(config.FTP_CONFIG) {}
 
 void arduino_temp::Program::setup() {
   // store the start time
@@ -83,12 +85,12 @@ void arduino_temp::Program::setup() {
       break;
   }
 
-  coreFunctions_.sleepMaxTime();
+  coreFunctions_.doSleepForMicros(CORE_SLEEP_TIME_IN_MICROS);
 }
 
 void arduino_temp::Program::loop() {
   // doLogWarn("doing nothing in loop!");
-  coreFunctions_.sleepMaxTime();
+  coreFunctions_.doSleepForMicros(CORE_SLEEP_TIME_IN_MICROS);
 }
 
 void arduino_temp::Program::setStartMillis(unsigned long startMillis) {
@@ -131,7 +133,7 @@ void arduino_temp::Program::doWorkNormal() {
       dumpLog(LOGFILE_DIRECTORY + LOGFILE_NAME);
       dumpLog(LOGFILE_DIRECTORY + LOGFILE_NAME + LOGFILE_LASTBAD_EXTENSION);
     }
-    coreFunctions_.sleepMaxTime();
+    coreFunctions_.doSleepForMicros(CORE_SLEEP_TIME_IN_MICROS);
   }
 
   sendMQTTValues(resetReason, measuredValuesBatt, measuredValuesDht);
@@ -183,23 +185,27 @@ void arduino_temp::Program::sendMQTTValues(
     const struct measured_values_dht& measuredValuesDht) {
   FileHandler::getInstance().doLogInfoLine();
   FileHandler::getInstance().doLogInfo("Sending data via MQTT for room: " +
-                                       MQTT_ROOM);
+                                       mqtt_.getTopic());
 
   timing_.timingStart();
   // send all values
   // wifi connection time
-  mqtt_.sendMqtt(MQTT_ROOM + "/wificonnection", String(wifi_.wifiMillis));
+  mqtt_.sendMqtt(mqtt_.getTopic() + "/wificonnection",
+                 String(wifi_.wifiMillis));
   // date time
-  mqtt_.sendMqtt(MQTT_ROOM + "/datetime", ntp_.getDateTime());
+  mqtt_.sendMqtt(mqtt_.getTopic() + "/datetime", ntp_.getDateTime());
   // reset reason
-  mqtt_.sendMqtt(MQTT_ROOM + "/resetReason", resetReason);
+  mqtt_.sendMqtt(mqtt_.getTopic() + "/resetReason", resetReason);
   // battery
-  mqtt_.sendMqtt(MQTT_ROOM + "/batt", String(measuredValuesBatt.battV));
-  mqtt_.sendMqtt(MQTT_ROOM + "/battRaw", String(measuredValuesBatt.batt));
+  mqtt_.sendMqtt(mqtt_.getTopic() + "/batt", String(measuredValuesBatt.battV));
+  mqtt_.sendMqtt(mqtt_.getTopic() + "/battRaw",
+                 String(measuredValuesBatt.batt));
   // temperature / humidity values
   if (measuredValuesDht.couldReadValues) {
-    mqtt_.sendMqtt(MQTT_ROOM + "/temperature", String(measuredValuesDht.temp));
-    mqtt_.sendMqtt(MQTT_ROOM + "/humidity", String(measuredValuesDht.hum));
+    mqtt_.sendMqtt(mqtt_.getTopic() + "/temperature",
+                   String(measuredValuesDht.temp));
+    mqtt_.sendMqtt(mqtt_.getTopic() + "/humidity",
+                   String(measuredValuesDht.hum));
   }
   FileHandler::getInstance().doLogInfoLine();
   timing_.timingEnd("MQV");
@@ -213,7 +219,7 @@ long arduino_temp::Program::sendMQTTDuration(unsigned long startMillis) {
   long wholeduration = millis() - startMillis;
   FileHandler::getInstance().doLogInfo("duration: " + String(wholeduration) +
                                        " ms");
-  mqtt_.sendMqtt(MQTT_ROOM + "/duration", String(wholeduration));
+  mqtt_.sendMqtt(mqtt_.getTopic() + "/duration", String(wholeduration));
   FileHandler::getInstance().doLogInfoLine();
   timing_.timingEnd("MQD");
   FileHandler::getInstance().doLogInfoLine();
@@ -226,7 +232,8 @@ void arduino_temp::Program::sendMQTTSleepTime(long sleepTimeInMicros) {
   timing_.timingStart();
   FileHandler::getInstance().doLogInfo("sleeping for microseconds: " +
                                        String(sleepTimeInMicros));
-  mqtt_.sendMqtt(MQTT_ROOM + "/sleepTime", String(sleepTimeInMicros / 1000));
+  mqtt_.sendMqtt(mqtt_.getTopic() + "/sleepTime",
+                 String(sleepTimeInMicros / 1000));
   FileHandler::getInstance().doLogInfoLine();
   timing_.timingEnd("MQS");
 }
@@ -238,7 +245,7 @@ void arduino_temp::Program::sendMQTTTimings() {
   String timingsstr =
       timing_.getTimings() + ",A:" + String(millis() - startMillis_);
   timingsstr.replace(" ", "");
-  mqtt_.sendMqtt(MQTT_ROOM + "/timings", timingsstr);
+  mqtt_.sendMqtt(mqtt_.getTopic() + "/timings", timingsstr);
 }
 
 long arduino_temp::Program::calculateSleepTimeMicros(
@@ -248,7 +255,7 @@ long arduino_temp::Program::calculateSleepTimeMicros(
 
   // calculate sleeping time
   long sleepTimeInMicros = coreFunctions_.calcSleepTimeInMicroSeconds(
-      CORE_SLEEP_TIME_IN_MILLIS, startMillis);
+      CORE_SLEEP_TIME_IN_MICROS, startMillis);
   return sleepTimeInMicros;
 }
 

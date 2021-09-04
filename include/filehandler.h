@@ -2,7 +2,6 @@
 
 #include <Arduino.h>
 
-#include "constants.h"
 #include "ntp.h"
 
 namespace arduino_temp {
@@ -10,19 +9,31 @@ namespace arduino_temp {
 // Handling of files / logging
 class FileHandler {
  private:
-  // flag if the log should be enabled
-  boolean log_enabled_ = LOG_ENABLED;
-  // name of the logfile
-  String logfileName_ = LOGFILE_NAME;
-  // buffer for logs until the log is ready
-  String logBuffer_ = "";
-
   // NTP to get time for logging
   NTP ntp_;
 
-  FileHandler(boolean log_enabled = LOG_ENABLED);
+  // flag if the log should be enabled
+  boolean logEnabled_ = false;
+  // buffer for logs until the log is ready
+  String logBuffer_ = "";
+
+  FileHandler();
   FileHandler(FileHandler const&);     // Don't Implement
   void operator=(FileHandler const&);  // Don't implement
+
+  // Get the name for the log file backup.
+  // parameters:
+  //   logfileName ... base name of the log files
+  //   num ... number of the log file
+  // returns the name of the log file
+  String getLogfileBackupName(String logfileName, int num);
+
+  // Write to log file.
+  // parameters:
+  //   logfileName ... base name of the log file
+  //   logmessage ... message to log
+  // returns nothing
+  void writeLog(String logfileName, String logmessage);
 
  public:
   static FileHandler& getInstance() {
@@ -34,8 +45,8 @@ class FileHandler {
 
   // Sets if the log should be enabled (true) or not (false)
   // parameters:
-  //   log_enabled ... whether the log should be enabled (true) or not (false)
-  void setLogEnabled(boolean log_enabled);
+  //   logEnabled ... whether the log should be enabled (true) or not (false)
+  void setLogEnabled(boolean logEnabled);
 
   // Start the file system and enable logging.
   // parameters: none
@@ -52,13 +63,6 @@ class FileHandler {
   //   directory ... the directory to list
   // returns nothing
   void listDirectory(String directory);
-
-  // Get the name for the log file backup.
-  // parameters:
-  //   logfileName ... base name of the log files
-  //   num ... number of the log file
-  // returns the name of the log file
-  String getLogfileBackupName(String logfileName, int num);
 
   // Rotate the log files.
   // parameters:
@@ -81,8 +85,8 @@ class FileHandler {
   // returns nothing
   void deleteLogfiles(String directory, String logfileName);
 
-  // Writes message with logLevel to serial and log file if global_log_enabled
-  // is true. If global_log_enabled is false, the content is written to an
+  // Writes message with logLevel to serial and log file if global_logEnabled
+  // is true. If global_logEnabled is false, the content is written to an
   // internal log buffer. Use dumpLogBuffer() to write the content to the log
   // file. parameters:
   //   logLevel ... log level
@@ -125,13 +129,6 @@ class FileHandler {
   //   logfileName ... base name of the log file
   // returns nothing
   void dumpLogBuffer(String logfileName);
-
-  // Write to log file.
-  // parameters:
-  //   logfileName ... base name of the log file
-  //   logmessage ... message to log
-  // returns nothing
-  void writeLog(String logfileName, String logmessage);
 
   // Print the contents of the file to the serial.
   // parameters:

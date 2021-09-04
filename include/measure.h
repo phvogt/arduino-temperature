@@ -3,48 +3,40 @@
 #include <Arduino.h>
 #include <DHT.h>
 
-// measured values from DHT
-struct measured_values_dht {
-  boolean couldReadValues;
-  float temp;
-  float hum;
-};
-
-// measured values from battery
-struct measured_values_bat {
-  int batt;
-  double battV;
-};
+#include "measureconfig.h"
 
 namespace arduino_temp {
 
 // Measure with the sensor.
 class Measure {
  private:
+  // measuring configuration
+  MeasureConfig measureConfig_;
+
   // reference to the DHT sensor
   DHT dht_;
 
   // Gets the temperature / humidity and sends it to MQTT.
   // parameters:
-  //   simulateValues ... flag if values should be simulated (true) or not
-  //   (false) dhtMaxReadValuesRetries ... max retries to read values
-  //   dhtRetryDelayInMillis ... delay in milliseconds between retries
   // returns the measured values
-  measured_values_dht getAndSendTemperatureAndHumidityData(
-      boolean simulateValues, int dhtMaxReadValuesRetries,
-      unsigned long dhtRetryDelayInMillis);
+  measured_values_dht getAndSendTemperatureAndHumidityData();
 
  public:
-  Measure();
+  // Constructor.
+  // parameters:
+  //   measureConfig ... measuring configuration
+  Measure(MeasureConfig measureConfig);
 
   // initialize DHT temperature / humidity sensor
   void initDHT();
 
   // Gets the temperature and humidity from the DHT.
+  // parameters: none
   // returns the struct with the measured values from the DHT
   measured_values_dht measureDHTTempAndHumidity();
 
   // Gets the battery values
+  // parameters: none
   // returns the battery status
   measured_values_bat measureBatteryValues();
 };

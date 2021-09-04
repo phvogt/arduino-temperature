@@ -1,6 +1,5 @@
 #include "timing.h"
 
-#include "constants.h"
 #include "filehandler.h"
 
 arduino_temp::Timing::Timing() {}

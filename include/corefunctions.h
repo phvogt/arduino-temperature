@@ -2,13 +2,22 @@
 
 #include <Arduino.h>
 
-#include "filehandler.h"
+#include "corefunctionsconfig.h"
 
 namespace arduino_temp {
 
 // Provides ESPcore functionalities.
 class CoreFunctions {
+ private:
+  // CoreFunctions configuration
+  CoreFunctionsConfig coreFunctionsConfig_;
+
  public:
+  // Constructor
+  // parameters:
+  //   coreFunctionsConfig ...CoreFunctions configuration
+  CoreFunctions(CoreFunctionsConfig coreFunctionsConfig);
+
   // Get the reset reason.
   // parameters: none
   // returns the reset reason
@@ -27,11 +36,6 @@ class CoreFunctions {
   //   sleepTimeInMicros ... the sleep time in micro seconds
   // returns nothing
   void doSleepForMicros(long sleepTimeInMicros);
-
-  // Sleeps fot the maximum time.
-  // parameters: none
-  // returns nothing
-  void sleepMaxTime();
 };
 
 }  // namespace arduino_temp

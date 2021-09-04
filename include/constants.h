@@ -30,7 +30,7 @@ const int WORK_MODE_FTPUPLOAD = 5;
 // only try this number of times to connect to MQTT (with delay below)
 const int MQTT_MAX_RETRIES = 3;
 // delay between MQTT connection retries
-const unsigned long MQTT_CONNECT_RETRY_DELAY_IN_MILLIS = 500;
+const unsigned long MQTT_RETRY_DELAY_IN_MILLIS = 500;
 
 // ---------------------------------------------------
 // WIFI
@@ -38,7 +38,7 @@ const unsigned long MQTT_CONNECT_RETRY_DELAY_IN_MILLIS = 500;
 // only try this number times to connect to wifi (with delay below)
 const int WIFI_MAX_RETRIES = 200;
 // delay between wifi connection retries
-const unsigned long WIFI_CONNECT_RETRY_DELAY_IN_MILLIS = 100;
+const unsigned long WIFI_RETRY_DELAY_IN_MILLIS = 100;
 // after this number of retries the WiFi gets disconnected and reconnected
 const int WIFI_RETRY_RESET_COUNT = 50;
 
@@ -101,4 +101,3 @@ const unsigned long NTP_RETRY_DELAY_IN_MILLIS = 100;
 // FTP
 
 const boolean FTP_DEBUG_ENABLED = false;
-

@@ -4,8 +4,7 @@
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 
-#include "config.h"
-#include "constants.h"
+#include "ntpconfig.h"
 
 namespace arduino_temp {
 
@@ -13,6 +12,9 @@ namespace arduino_temp {
 // Gets the current time.
 class NTP {
  private:
+  // NTP configuration
+  NTPConfig ntpConfig_;
+
   // WIFI UDP client
   WiFiUDP ntpUDP_;
   // NTP client to get the time
@@ -21,11 +23,9 @@ class NTP {
   time_t time = 0;
 
   // Get the NTP time epoch.
-  // parameters:
-  //   maxNtpRetries ... number of retries
-  //   ntpRetryDelayInMillis ... delay in milliseconds between retries
+  // parameters: none
   // returns the time as epoch
-  time_t getNtpTime(int maxNtpRetries, unsigned long ntpRetryDelayInMillis);
+  time_t getNtpTime();
 
   // Convert the int to a double digit string with leading zeroes.
   // parameters:
@@ -36,13 +36,11 @@ class NTP {
  public:
   // Constructor.
   // parameters:
-  //   ntpServer ... IP address of the NTP server
-  //   ntpTimeOffset ... time offset in seconds
-  //   ntpUpdateInterval ... update interval for NTP
-  NTP(const char* ntpServer = NTP_SERVER, int ntpTimeOffset = NTP_TIME_OFFSET,
-      int ntpUpdateInterval = NTP_UPDATE_INTERVAL);
+  //   ntpConfig ... NTP configuration
+  NTP(NTPConfig ntpConfig);
 
   // Initialize the time from NTP.
+  // parameters: none
   // resturns the current epoch
   time_t initNTP();
 

@@ -3,22 +3,15 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 
-#include "config.h"
-#include "constants.h"
-#include "filehandler.h"
+#include "ftpconfig.h"
 
 namespace arduino_temp {
 
 // Transfer files via FTP
 class FTP {
  private:
-  // flag if debugging should be enabled (true) or not
-  boolean debug_ = false;
-
-  // FTP server IP address
-  IPAddress ftpserver_;
-  // FTP server port
-  uint16_t ftpport_;
+  // FTP connection configuration
+  FTPConfig ftpConfig_;
 
   // FTP client
   WiFiClient ftpclient_;
@@ -30,21 +23,23 @@ class FTP {
  public:
   // Constructor
   // parameters:
-  //   ftpserverip ... IP address of the FTP server to connect to
-  //   ftpport ... port numnber of the FTP server to connect to
-  //   debug ... flag if debugging should be enabled (true) or not
-  FTP(IPAddress ftpserverip = FTP_SERVER_IP_ADDRESS,
-      uint16_t ftpport = FTP_SERVER_PORT, boolean debug = FTP_DEBUG_ENABLED);
+  //   ftpConfig ... FTP connection configuration
+  FTP(FTPConfig ftpConfig);
 
   // Uploads the file via FTP
   // parameters
   //   filename ... name of the file to upload
+  // returns 0 in case of an error or 1 if ok
   byte ftpUploadFile(String filename);
 
   // handler for FTP errors
+  // parameters: none
+  // returns nothing
   void efail();
 
   // handler for received data
+  // parameters: none
+  // returns the received byte
   byte eRcv();
 };
 

@@ -28,7 +28,7 @@ The necessary 3rd party libraries are listed in [src/arduino-temperature.cpp](sr
 
 ## Configuration
 
-The software must be configured by copying [include/config.h](include/config.h) to [include/config_user.h](include/config_user.h). 
+The software must be configured by creating config.cpp according to the instruction in [include/config.h](include/config.h). 
 
 ## Working mode
 

@@ -4,42 +4,38 @@
 #include "config.h"
 #include "constants.h"
 
-arduino_temp::FTP::FTP(IPAddress ftpserverip, uint16_t ftpport, boolean debug) {
-  debug_ = debug;
-  ftpserver_ = ftpserverip;
-  ftpport_ = ftpport;
-}
+arduino_temp::FTP::FTP(FTPConfig ftpConfig) : ftpConfig_(ftpConfig) {}
 
 byte arduino_temp::FTP::ftpUploadFile(String filename) {
-  if (ftpclient_.connect(ftpserver_, ftpport_)) {
+  if (ftpclient_.connect(ftpConfig_.server, ftpConfig_.port)) {
     Serial.println(F("Command connected"));
   } else {
     Serial.println(F("Command connection failed"));
     return 0;
   }
   if (!eRcv()) return 0;
-  if (debug_) Serial.println("Send USER");
-  ftpclient_.println("USER " + FTP_USERNAME);
+  if (ftpConfig_.isDebugEnabled) Serial.println("Send USER");
+  ftpclient_.println("USER " + ftpConfig_.username);
 
   if (!eRcv()) return 0;
-  if (debug_) Serial.println("Send PASSWORD");
-  ftpclient_.println("PASS " + FTP_PASSWORD);
+  if (ftpConfig_.isDebugEnabled) Serial.println("Send PASSWORD");
+  ftpclient_.println("PASS " + ftpConfig_.password);
 
   if (!eRcv()) return 0;
-  if (debug_) Serial.println("Send SYST");
+  if (ftpConfig_.isDebugEnabled) Serial.println("Send SYST");
   ftpclient_.println(F("SYST"));
 
   if (!eRcv()) return 0;
-  if (debug_) Serial.println("Send Type I");
+  if (ftpConfig_.isDebugEnabled) Serial.println("Send Type I");
   ftpclient_.println(F("Type I"));
 
   if (!eRcv()) return 0;
-  if (debug_) Serial.println("Send PASV");
+  if (ftpConfig_.isDebugEnabled) Serial.println("Send PASV");
   ftpclient_.println(F("PASV"));
 
-  if (debug_) Serial.println("Send PASV2");
+  if (ftpConfig_.isDebugEnabled) Serial.println("Send PASV2");
   if (!eRcv()) return 0;
-  if (debug_) Serial.println("Send PASV3");
+  if (ftpConfig_.isDebugEnabled) Serial.println("Send PASV3");
 
   char *tStr = strtok(ftpoutBuf_, "(,");
   int array_pasv[6];
@@ -54,11 +50,11 @@ byte arduino_temp::FTP::ftpUploadFile(String filename) {
   hiPort = array_pasv[4] << 8;
   loPort = array_pasv[5] & 255;
 
-  if (debug_) Serial.print(F("Data port: "));
+  if (ftpConfig_.isDebugEnabled) Serial.print(F("Data port: "));
   hiPort = hiPort | loPort;
-  if (debug_) Serial.println(hiPort);
+  if (ftpConfig_.isDebugEnabled) Serial.println(hiPort);
 
-  if (ftpdclient_.connect(ftpserver_, hiPort)) {
+  if (ftpdclient_.connect(ftpConfig_.server, hiPort)) {
     Serial.println(F("Data connected"));
   } else {
     Serial.println(F("Data connection failed"));
@@ -66,7 +62,7 @@ byte arduino_temp::FTP::ftpUploadFile(String filename) {
     return 0;
   }
 
-  if (debug_) Serial.println("Send STOR filename");
+  if (ftpConfig_.isDebugEnabled) Serial.println("Send STOR filename");
   ftpclient_.print(F("STOR "));
   ftpclient_.println(filename);
 
@@ -75,7 +71,7 @@ byte arduino_temp::FTP::ftpUploadFile(String filename) {
     return 0;
   }
 
-  if (debug_) Serial.println(F("Writing"));
+  if (ftpConfig_.isDebugEnabled) Serial.println(F("Writing"));
 #define bufSizeFTP 1460
   uint8_t clientBuf[bufSizeFTP];
   size_t clientCount = 0;
@@ -104,11 +100,10 @@ byte arduino_temp::FTP::ftpUploadFile(String filename) {
   if (!eRcv()) return 0;
 
   ftpclient_.stop();
-  if (debug_) Serial.println(F("SPIFS closed"));
+  if (ftpConfig_.isDebugEnabled) Serial.println(F("SPIFS closed"));
   return 1;
 }
 
-// FTP error handler
 void arduino_temp::FTP::efail() {
   byte thisByte = 0;
 
@@ -125,8 +120,6 @@ void arduino_temp::FTP::efail() {
   Serial.println(F("Command disconnected"));
 }
 
-// receive from FTP and put into ftpoutBuf_.
-// returns the read byte
 byte arduino_temp::FTP::eRcv() {
   byte respCode;
   byte thisByte;

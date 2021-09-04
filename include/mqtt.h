@@ -4,24 +4,15 @@
 #include <ESP8266WiFi.h>
 #include <MQTTClient.h>
 
+#include "mqttconfig.h"
+
 namespace arduino_temp {
 
 // MQTT client to transfer information.
 class MQTT {
  private:
-  // MQTT host
-  char* host_;
-  // MQTT port (1883 for no SSL or 8883 for SSL)
-  int port_;
-  // MQTT username
-  char* username_;
-  // MQTT password
-  char* password_;
-
-  // maximum number of retires to connect to MQTT
-  int maxMqttConnectionRetries_;
-  // delay in milliseconds between connection retries
-  unsigned long mqttConnectRetryDelayInMillis_;
+  // MQTT configuration
+  MQTTConfig mqttConfig_;
 
   // WIFI client
   WiFiClient mqttNet_;
@@ -29,27 +20,25 @@ class MQTT {
   MQTTClient mqttClient_;
 
  public:
+  // Constructor
   // parameters:
-  //   host ... MQTT host
-  //   port ... MQTT port (1883 for no SSL or 8883 for SSL)
-  //   username ... MQTT username
-  //   password ... MQTT password
-  // returns true if the MQTT client is connected
-  MQTT(String host, const int port, String username, String password,
-       int maxMqttConnectionRetries,
-       unsigned long mqttConnectRetryDelayInMillis);
-
-  // free members
-  ~MQTT();
+  //   mqttConfig ... MQTT configuration
+  MQTT(MQTTConfig mqttConfig);
 
   // Setups of the MQTT.
+  // parameters: none
   // returns the MQTT connection status
   boolean setupMQTT();
+
+  // Gets the topic for MQTT
+  // returns the topic
+  String getTopic();
 
   // Send MQTT message.
   // parameters:
   // topic ... topic
   // message ... message
+  // returns nothing
   void sendMqtt(String topic, String message);
 };
 

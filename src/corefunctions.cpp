@@ -1,10 +1,11 @@
 #include "corefunctions.h"
 
-#include "config.h"
+#include "filehandler.h"
 
-// Get the reset reason.
-// parameters: none
-// returns the reset reason
+arduino_temp::CoreFunctions::CoreFunctions(
+    CoreFunctionsConfig coreFunctionsConfig)
+    : coreFunctionsConfig_(coreFunctionsConfig) {}
+
 String arduino_temp::CoreFunctions::determineResetReason() {
   FileHandler::getInstance().doLogInfoLine();
   FileHandler::getInstance().doLogInfo("Getting reset reason");
@@ -29,12 +30,13 @@ long arduino_temp::CoreFunctions::calcSleepTimeInMicroSeconds(
     workedTimeMillis = 0;
   }
 
-  long sleepTimeMicro =
-      (sleepTimeInMillis * 1000 - workedTimeMillis * 1000) * DEEP_SLEEP_FACTOR;
-  FileHandler::getInstance().doLogInfo("startTimeInMillis: " + String(startTimeInMillis) +
-                         " sleepTimeInMillis: " + String(sleepTimeInMillis) +
-                         " sleepFactor = " + String(DEEP_SLEEP_FACTOR) +
-                         " sleepTimeMicro: " + String(sleepTimeMicro));
+  long sleepTimeMicro = (sleepTimeInMillis * 1000 - workedTimeMillis * 1000) *
+                        coreFunctionsConfig_.deepSleepFactor;
+  FileHandler::getInstance().doLogInfo(
+      "startTimeInMillis: " + String(startTimeInMillis) +
+      " sleepTimeInMillis: " + String(sleepTimeInMillis) +
+      " sleepFactor = " + String(coreFunctionsConfig_.deepSleepFactor) +
+      " sleepTimeMicro: " + String(sleepTimeMicro));
   FileHandler::getInstance().doLogInfoLine();
 
   return sleepTimeMicro;
@@ -43,11 +45,4 @@ long arduino_temp::CoreFunctions::calcSleepTimeInMicroSeconds(
 void arduino_temp::CoreFunctions::doSleepForMicros(long sleepTimeInMicros) {
   ESP.deepSleep(sleepTimeInMicros, WAKE_RF_DISABLED);
   delay(100);
-}
-
-void arduino_temp::CoreFunctions::sleepMaxTime() {
-  int sleepTimeMicro = CORE_SLEEP_TIME_IN_MILLIS * 1000;
-  FileHandler::getInstance().doLogInfo("going max time sleeping for " +
-                         String(sleepTimeMicro));
-  doSleepForMicros(sleepTimeMicro);
 }
