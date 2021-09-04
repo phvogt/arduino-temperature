@@ -15,6 +15,13 @@ namespace arduino_temp {
 
 class Config {
  public:
+  // should the logging to the file system be enabled (true) or not (false)
+  boolean logEnabled_ = false;
+  // what the program should do, see constants.h for valid values
+  int workMode_ = WORK_MODE_NORMAL;
+  // sleep time between measurements in microseconds
+  long sleepTimeBetweenMeasureInMicros = 300 * 1000 * 1000;
+
   CoreFunctionsConfig COREFUNCTIONS_CONFIG;
   FTPConfig FTP_CONFIG;
   MeasureConfig MEASURE_CONFIG;
@@ -27,16 +34,6 @@ class Config {
 };
 }  // namespace arduino_temp
 
-// should the logging to the file system be enabled (true) or not (false)
-const boolean LOG_ENABLED = false;
-
-// what the program should do, see constants.h for valid values
-const int WORK_MODE = WORK_MODE_NORMAL;
-// const int WORK_MODE = WORK_MODE_DELETE_LOGFILES;
-
-// sleep time in microseconds
-const long CORE_SLEEP_TIME_IN_MICROS = 300 * 1000 * 1000;
-
 // ========================================================================
 // use the following in config.cpp
 //
@@ -47,6 +44,14 @@ const long CORE_SLEEP_TIME_IN_MICROS = 300 * 1000 * 1000;
 // #include "constants.h"
 //
 // arduino_temp::Config::Config() {
+//
+// // enable logging (true) or not (false)
+// logEnabled_ = false;
+// // mode of work
+// workMode_ = WORK_MODE_NORMAL;
+// // sleep time between measurements in microseconds
+// sleepTimeBetweenMeasureInMicros = 300 * 1000 * 1000
+//
 // // ---------------------------------------------------
 // // WIFI
 //

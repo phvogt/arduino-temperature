@@ -2,8 +2,11 @@
 
 #include <Arduino.h>
 
+#include "config.h"
 #include "corefunctions.h"
+#include "filehandler.h"
 #include "ftp.h"
+#include "logger.h"
 #include "measure.h"
 #include "mqtt.h"
 #include "ntp.h"
@@ -15,10 +18,17 @@ namespace arduino_temp {
 // Program.
 class Program {
  private:
-  // timing
-  Timing timing_;
+  // Configuration
+  Config config_;
+
   // NTP client
   NTP ntp_;
+  // logging
+  Logger logger_;
+  // File handling
+  FileHandler fileHandler_;
+  // timing
+  Timing timing_;
   // MQTT communication
   MQTT mqtt_;
   // Wifi client

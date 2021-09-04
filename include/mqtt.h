@@ -4,6 +4,7 @@
 #include <ESP8266WiFi.h>
 #include <MQTTClient.h>
 
+#include "logger.h"
 #include "mqttconfig.h"
 
 namespace arduino_temp {
@@ -13,6 +14,8 @@ class MQTT {
  private:
   // MQTT configuration
   MQTTConfig mqttConfig_;
+  // logging
+  Logger logger_;
 
   // WIFI client
   WiFiClient mqttNet_;
@@ -23,7 +26,8 @@ class MQTT {
   // Constructor
   // parameters:
   //   mqttConfig ... MQTT configuration
-  MQTT(MQTTConfig mqttConfig);
+  //   logger ... logging
+  MQTT(MQTTConfig mqttConfig, Logger logger);
 
   // Setups of the MQTT.
   // parameters: none

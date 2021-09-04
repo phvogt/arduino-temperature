@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <DHT.h>
 
+#include "logger.h"
 #include "measureconfig.h"
 
 namespace arduino_temp {
@@ -12,6 +13,8 @@ class Measure {
  private:
   // measuring configuration
   MeasureConfig measureConfig_;
+  // logging
+  Logger logger_;
 
   // reference to the DHT sensor
   DHT dht_;
@@ -25,7 +28,8 @@ class Measure {
   // Constructor.
   // parameters:
   //   measureConfig ... measuring configuration
-  Measure(MeasureConfig measureConfig);
+  //   logger ... logging
+  Measure(MeasureConfig measureConfig, Logger logger);
 
   // initialize DHT temperature / humidity sensor
   void initDHT();

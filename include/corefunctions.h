@@ -3,6 +3,7 @@
 #include <Arduino.h>
 
 #include "corefunctionsconfig.h"
+#include "logger.h"
 
 namespace arduino_temp {
 
@@ -12,11 +13,15 @@ class CoreFunctions {
   // CoreFunctions configuration
   CoreFunctionsConfig coreFunctionsConfig_;
 
+  // logging
+  Logger logger_;
+
  public:
   // Constructor
   // parameters:
   //   coreFunctionsConfig ...CoreFunctions configuration
-  CoreFunctions(CoreFunctionsConfig coreFunctionsConfig);
+  //   logger ... logging
+  CoreFunctions(CoreFunctionsConfig coreFunctionsConfig, Logger logger);
 
   // Get the reset reason.
   // parameters: none
@@ -25,11 +30,11 @@ class CoreFunctions {
 
   // Calculate the sleep time.
   // parameters:
-  //   sleepTimeInMillis ... time to sleep in milli seconds
-  //   startTimeInMillis ... start time in milli seconds
+  //   sleepTimeInMicros ... time to sleep in micro seconds
+  //   startTimeInMicros ... start time in micro seconds
   // return the time to sleep in micro seconds
-  long calcSleepTimeInMicroSeconds(int sleepTimeInMillis,
-                                   int startTimeInMillis);
+  long calcSleepTimeInMicroSeconds(int sleepTimeInMicros,
+                                   int startTimeInMicros);
 
   // Do the sleeping for the provided micro seconds.
   // parameters:

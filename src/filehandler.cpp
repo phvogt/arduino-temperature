@@ -1,29 +1,23 @@
 #include "filehandler.h"
 
 #include "LittleFS.h"
-#include "config.h"
+#include "constants.h"
 
-arduino_temp::Config configForNtp;
-
-arduino_temp::FileHandler::FileHandler() : ntp_(configForNtp.NTP_CONFIG) {}
-
-void arduino_temp::FileHandler::setLogEnabled(boolean logEnabled) {
-  logEnabled_ = logEnabled;
-}
+arduino_temp::FileHandler::FileHandler(Logger logger) : logger_(logger) {}
 
 void arduino_temp::FileHandler::startFS() {
-  doLogInfoLine();
-  doLogInfo("Starting LittleFS");
+  logger_.logInfoLine();
+  logger_.logInfo("Starting LittleFS");
 
   // setup LittleFS to write files to flash file system
   LittleFS.begin();
 }
 
 void arduino_temp::FileHandler::stopFS() {
-  doLogInfoLine();
-  doLogInfo("Stopping LittleFS");
+  logger_.logInfoLine();
+  logger_.logInfo("Stopping LittleFS");
 
-  setLogEnabled(false);
+  logger_.setLogEnabled(false);
   LittleFS.end();
 }
 
@@ -115,54 +109,11 @@ void arduino_temp::FileHandler::deleteLogfiles(String directory,
   }
 }
 
-void arduino_temp::FileHandler::doLog(String logLevel, String message) {
-  String logLine = ntp_.getDateTime() + " " + String(millis()) + " " +
-                   logLevel + ": " + message;
-  Serial.println(logLine);
+void arduino_temp::FileHandler::writeFile(String fileName, String content) {
+  // open file for writing.
+  File f = LittleFS.open(fileName, "w");
 
-  if (logEnabled_) {
-    if (logBuffer_ == "") {
-      logBuffer_ += logLine;
-    } else {
-      logBuffer_ += "\n" + logLine;
-    }
-  }
-}
-
-void arduino_temp::FileHandler::doLogInfo(String message) {
-  doLog(LOGLEVEL_INFO, message);
-}
-
-void arduino_temp::FileHandler::doLogWarn(String message) {
-  doLog(LOGLEVEL_WARN, message);
-}
-
-void arduino_temp::FileHandler::doLogError(String message) {
-  doLog(LOGLEVEL_ERROR, message);
-}
-
-void arduino_temp::FileHandler::doLogTime(String message) {
-  doLog(LOGLEVEL_TIME, message);
-}
-
-void arduino_temp::FileHandler::doLogInfoLine() {
-  doLogInfo("------------------------------------------------------");
-}
-
-void arduino_temp::FileHandler::doLogInfoDoubleLine() {
-  doLogInfo("======================================================");
-}
-
-void arduino_temp::FileHandler::dumpLogBuffer(String logfileName) {
-  writeLog(logfileName, logBuffer_);
-}
-
-void arduino_temp::FileHandler::writeLog(String logfileName,
-                                         String logmessage) {
-  // open file for appending new blank line to EOF.
-  File f = LittleFS.open(logfileName, "w");
-
-  f.print(logmessage);
+  f.print(content);
   f.print('\n');
   f.flush();
   delay(1);

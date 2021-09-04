@@ -28,11 +28,11 @@ The necessary 3rd party libraries are listed in [src/arduino-temperature.cpp](sr
 
 ## Configuration
 
-The software must be configured by creating config.cpp according to the instruction in [include/config.h](include/config.h). 
+The software must be configured by creating `config.cpp` according to the instruction in [include/config.h](include/config.h). 
 
 ## Working mode
 
-The working mode can be set in the file [include/constants.h](include/constants.h) with the variable `WORK_MODE`.
+The working mode can be set in `config.cpp` with the `WORK_MODE_*` constants (see [include/constants.h](include/constants.h)).
 
 ## Logging
 

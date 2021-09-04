@@ -1,43 +1,42 @@
 #include "corefunctions.h"
 
-#include "filehandler.h"
-
 arduino_temp::CoreFunctions::CoreFunctions(
-    CoreFunctionsConfig coreFunctionsConfig)
-    : coreFunctionsConfig_(coreFunctionsConfig) {}
+    CoreFunctionsConfig coreFunctionsConfig, Logger logger)
+    : coreFunctionsConfig_(coreFunctionsConfig), logger_(logger) {}
 
 String arduino_temp::CoreFunctions::determineResetReason() {
-  FileHandler::getInstance().doLogInfoLine();
-  FileHandler::getInstance().doLogInfo("Getting reset reason");
+  logger_.logInfoLine();
+  logger_.logInfo("Getting reset reason");
 
   // get the reason the esp was reset
   String resetReason = ESP.getResetReason();
-  FileHandler::getInstance().doLogInfo("resetReason: " + resetReason);
-  FileHandler::getInstance().doLogInfoLine();
+  logger_.logInfo("resetReason: " + resetReason);
+  logger_.logInfoLine();
 
   return resetReason;
 }
 
 long arduino_temp::CoreFunctions::calcSleepTimeInMicroSeconds(
-    int sleepTimeInMillis, int startTimeInMillis) {
-  FileHandler::getInstance().doLogInfoLine();
-  FileHandler::getInstance().doLogInfo("calculating sleep time");
+    int sleepTimeInMicros, int startTimeInMicros) {
+  logger_.logInfoLine();
+  logger_.logInfo("calculating sleep time");
 
   // calculate the already worked millis
   long currentMillis = millis();
-  long workedTimeMillis = currentMillis - startTimeInMillis;
-  if (workedTimeMillis < 0) {
-    workedTimeMillis = 0;
+  long workedTimeMicros = currentMillis * 1000 - startTimeInMicros;
+  if (workedTimeMicros < 0) {
+    workedTimeMicros = 0;
   }
 
-  long sleepTimeMicro = (sleepTimeInMillis * 1000 - workedTimeMillis * 1000) *
+  long sleepTimeMicro = (sleepTimeInMicros - workedTimeMicros) *
                         coreFunctionsConfig_.deepSleepFactor;
-  FileHandler::getInstance().doLogInfo(
-      "startTimeInMillis: " + String(startTimeInMillis) +
-      " sleepTimeInMillis: " + String(sleepTimeInMillis) +
+  logger_.logInfo(
+      "startTimeInMicros: " + String(startTimeInMicros) +
+      " sleepTimeInMicros: " + String(sleepTimeInMicros) +
+      " workedTimeMicros: " + String(workedTimeMicros) +
       " sleepFactor = " + String(coreFunctionsConfig_.deepSleepFactor) +
       " sleepTimeMicro: " + String(sleepTimeMicro));
-  FileHandler::getInstance().doLogInfoLine();
+  logger_.logInfoLine();
 
   return sleepTimeMicro;
 }

@@ -2,24 +2,15 @@
 
 #include <Arduino.h>
 
-#include "ntp.h"
+#include "logger.h"
 
 namespace arduino_temp {
 
-// Handling of files / logging
+// Handling of files.
 class FileHandler {
  private:
-  // NTP to get time for logging
-  NTP ntp_;
-
-  // flag if the log should be enabled
-  boolean logEnabled_ = false;
-  // buffer for logs until the log is ready
-  String logBuffer_ = "";
-
-  FileHandler();
-  FileHandler(FileHandler const&);     // Don't Implement
-  void operator=(FileHandler const&);  // Don't implement
+  // logger
+  Logger logger_;
 
   // Get the name for the log file backup.
   // parameters:
@@ -28,25 +19,10 @@ class FileHandler {
   // returns the name of the log file
   String getLogfileBackupName(String logfileName, int num);
 
-  // Write to log file.
-  // parameters:
-  //   logfileName ... base name of the log file
-  //   logmessage ... message to log
-  // returns nothing
-  void writeLog(String logfileName, String logmessage);
-
  public:
-  static FileHandler& getInstance() {
-    // Guaranteed to be destroyed.
-    // Instantiated on first use.
-    static FileHandler instance;
-    return instance;
-  }
-
-  // Sets if the log should be enabled (true) or not (false)
-  // parameters:
-  //   logEnabled ... whether the log should be enabled (true) or not (false)
-  void setLogEnabled(boolean logEnabled);
+  // Constructor.
+  //   logger ... Logger
+  FileHandler(Logger logger);
 
   // Start the file system and enable logging.
   // parameters: none
@@ -57,6 +33,13 @@ class FileHandler {
   // parameters: none
   // returns nothing
   void stopFS();
+
+  // Write to  file.
+  // parameters:
+  //   fileName ... filename to write to
+  //   content ... content to write
+  // returns nothing
+  void writeFile(String fileName, String content);
 
   // List the content of the directory.
   // parameters:
@@ -84,51 +67,6 @@ class FileHandler {
   //   logfileName ... base name for log files
   // returns nothing
   void deleteLogfiles(String directory, String logfileName);
-
-  // Writes message with logLevel to serial and log file if global_logEnabled
-  // is true. If global_logEnabled is false, the content is written to an
-  // internal log buffer. Use dumpLogBuffer() to write the content to the log
-  // file. parameters:
-  //   logLevel ... log level
-  //   message ... message to log
-  // returns nothing
-  void doLog(String logLevel, String message);
-
-  // Logs the message with LOGLEVEL_INFO.
-  // parameters:
-  //   message ... the message to log
-  // returns nothing
-  void doLogInfo(String message);
-
-  // Logs the message with LOGLEVEL_WARN.
-  // parameters:
-  //   message ... the message to log
-  // returns nothing
-  void doLogWarn(String message);
-
-  // Logs the message with LOGLEVEL_ERROR.
-  // parameters:
-  //   message ... the message to log
-  // returns nothing
-  void doLogError(String message);
-
-  // Logs the message with LOGLEVEL_TIME.
-  // parameters:
-  //   message ... the message to log
-  // returns nothing
-  void doLogTime(String message);
-
-  // Logs a line LOGLEVEL_INFO.
-  void doLogInfoLine();
-
-  // Logs a double line LOGLEVEL_INFO.
-  void doLogInfoDoubleLine();
-
-  // Dumps the content of the log buffer to the log file.
-  // parameters:
-  //   logfileName ... base name of the log file
-  // returns nothing
-  void dumpLogBuffer(String logfileName);
 
   // Print the contents of the file to the serial.
   // parameters:
