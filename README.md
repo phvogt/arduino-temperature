@@ -49,33 +49,33 @@ category=Communication
 url=
 
 name=MQTT
-version=2.4.3
+version=2.5.0
 author=Joel Gaehwiler <joel.gaehwiler@gmail.com>
 category=Communication
 url=https://github.com/256dpi/arduino-mqtt
 
 name=DHT sensor library
-version=1.3.7
+version=1.4.2
 author=Adafruit
 category=Sensors
 url=https://github.com/adafruit/DHT-sensor-library
 
 needed for DHT
 name=Adafruit Unified Sensor
-version=1.0.3
+version=1.1.4
 author=Adafruit <info@adafruit.com>
 category=Sensors
 url=https://github.com/adafruit/Adafruit_Sensor
 
 
 name=NTPClient
-version=3.1.0
+version=3.2.0
 author=Fabrice Weinberg
 category=Timing
 url=https://github.com/arduino-libraries/NTPClient
 
 name=Time
-version=1.5
+version=1.6.1
 author=Michael Margolis
 category=Timing
 url=http://playground.arduino.cc/code/time
