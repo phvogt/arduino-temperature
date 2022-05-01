@@ -3,21 +3,23 @@
 #include "LittleFS.h"
 #include "constants.h"
 
-arduino_temp::FileHandler::FileHandler(Logger logger) : logger_(logger) {}
+arduino_temp::FileHandler::FileHandler(Logger& logger)  {
+  logger_ = &logger;
+}
 
 void arduino_temp::FileHandler::startFS() {
-  logger_.logInfoLine();
-  logger_.logInfo("Starting LittleFS");
+  logger_->logInfoLine();
+  logger_->logInfo("Starting LittleFS");
 
   // setup LittleFS to write files to flash file system
   LittleFS.begin();
 }
 
 void arduino_temp::FileHandler::stopFS() {
-  logger_.logInfoLine();
-  logger_.logInfo("Stopping LittleFS");
+  logger_->logInfoLine();
+  logger_->logInfo("Stopping LittleFS");
 
-  logger_.setLogEnabled(false);
+  logger_->setLogEnabled(false);
   LittleFS.end();
 }
 

@@ -13,12 +13,12 @@ namespace arduino_temp {
 class NTP {
  private:
   // NTP configuration
-  NTPConfig ntpConfig_;
+  NTPConfig* ntpConfig_;
 
   // WIFI UDP client
   WiFiUDP ntpUDP_;
   // NTP client to get the time
-  NTPClient timeClient_;
+  NTPClient* timeClient_;
   // current time
   time_t time = 0;
 
@@ -37,7 +37,7 @@ class NTP {
   // Constructor.
   // parameters:
   //   ntpConfig ... NTP configuration
-  NTP(NTPConfig ntpConfig);
+  NTP(NTPConfig& ntpConfig);
 
   // Initialize the time from NTP.
   // parameters: none

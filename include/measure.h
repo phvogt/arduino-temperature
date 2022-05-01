@@ -12,12 +12,12 @@ namespace arduino_temp {
 class Measure {
  private:
   // measuring configuration
-  MeasureConfig measureConfig_;
+  MeasureConfig* measureConfig_;
   // logging
-  Logger logger_;
+  Logger* logger_;
 
   // reference to the DHT sensor
-  DHT dht_;
+  DHT* dht_;
 
   // Gets the temperature / humidity and sends it to MQTT.
   // parameters:
@@ -29,7 +29,7 @@ class Measure {
   // parameters:
   //   measureConfig ... measuring configuration
   //   logger ... logging
-  Measure(MeasureConfig measureConfig, Logger logger);
+  Measure(MeasureConfig& measureConfig, Logger& logger);
 
   // initialize DHT temperature / humidity sensor
   void initDHT();

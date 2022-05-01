@@ -8,9 +8,9 @@ class NTPConfig {
   // NTP server name
   const char* server;
   // NTP time offset. Use 0 for UTC
-  int timeOffset;
+  long timeOffset;
   // update interval for NTP
-  int updateInterval;
+  unsigned long updateInterval;
 
   // only try this number times to connect to NTP (with delay below)
   int connectionMaxRetries;

@@ -10,7 +10,7 @@ namespace arduino_temp {
 class Timing {
  private:
   // logging
-  Logger logger_;
+  Logger* logger_;
 
   // for measuring timing
   unsigned long timingStart_ = 0;
@@ -22,7 +22,7 @@ class Timing {
   // Constructor.
   // parameters:
   //   logger ... logging
-  Timing(Logger logger);
+  Timing(Logger& logger);
 
   // Starts the timing measuring.
   // parameters: none

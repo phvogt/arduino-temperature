@@ -10,7 +10,7 @@ namespace arduino_temp {
 class FileHandler {
  private:
   // logger
-  Logger logger_;
+  Logger* logger_;
 
   // Get the name for the log file backup.
   // parameters:
@@ -22,7 +22,7 @@ class FileHandler {
  public:
   // Constructor.
   //   logger ... Logger
-  FileHandler(Logger logger);
+  FileHandler(Logger& logger);
 
   // Start the file system and enable logging.
   // parameters: none

@@ -3,14 +3,13 @@
 #include <Arduino.h>
 #include <TimeLib.h>
 
-arduino_temp::NTP::NTP(NTPConfig ntpConfig)
-    : ntpConfig_(ntpConfig),
-      ntpUDP_(),
-      timeClient_(ntpUDP_, ntpConfig.server, ntpConfig.timeOffset,
-                  ntpConfig.updateInterval){};
+arduino_temp::NTP::NTP(NTPConfig& ntpConfig) {
+  ntpConfig_ = &ntpConfig;
+  timeClient_ = new NTPClient(ntpUDP_, ntpConfig_->server, ntpConfig_->timeOffset, ntpConfig_->updateInterval);
+};
 
 time_t arduino_temp::NTP::initNTP() {
-  timeClient_.begin();
+  timeClient_->begin();
   time_t currentEpoch = getNtpTime();
   return currentEpoch;
 }
@@ -32,20 +31,20 @@ String arduino_temp::NTP::toStringLeadingZero(int value) {
 }
 
 time_t arduino_temp::NTP::getNtpTime() {
-  timeClient_.update();
+  timeClient_->update();
 
   int retryNtpCount = 1;
 
   unsigned long epoch = 0;
 
-  epoch = timeClient_.getEpochTime();
+  epoch = timeClient_->getEpochTime();
 
   // values below 1000 are not realistic
-  while ((epoch < 1000) && (retryNtpCount <= ntpConfig_.connectionMaxRetries)) {
+  while ((epoch < 1000) && (retryNtpCount <= ntpConfig_->connectionMaxRetries)) {
     retryNtpCount++;
-    delay(ntpConfig_.connectionRetryDelayInMillis);
-    timeClient_.update();
-    epoch = timeClient_.getEpochTime();
+    delay(ntpConfig_->connectionRetryDelayInMillis);
+    timeClient_->update();
+    epoch = timeClient_->getEpochTime();
   }
 
   return epoch;
