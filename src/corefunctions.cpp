@@ -1,9 +1,9 @@
 #include "corefunctions.h"
 
 arduino_temp::CoreFunctions::CoreFunctions(CoreFunctionsConfig& coreFunctionsConfig, Logger& logger) {
-      coreFunctionsConfig_ = &coreFunctionsConfig;
-      logger_ = &logger;
-    }
+  coreFunctionsConfig_ = &coreFunctionsConfig;
+  logger_ = &logger;
+}
 
 String arduino_temp::CoreFunctions::determineResetReason() {
   logger_->logInfoLine();
