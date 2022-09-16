@@ -56,6 +56,9 @@ arduino_temp::Measure::getAndSendTemperatureAndHumidityData() {
         triedToReadTimes++;
         delay(measureConfig_->dhtRetryDelayInMillis);
       } else {
+        if (triedToReadTimes > 0) {
+          logger_->logInfo("Succeeded to read from DHT sensor!");
+        }
         measuredValues.couldReadValues = true;
       }
     }
