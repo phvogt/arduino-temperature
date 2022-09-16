@@ -10,7 +10,7 @@ namespace arduino_temp {
 class Logger {
  private:
   // NTP to get time for logging
-  NTP ntp_;
+  NTP* ntp_;
 
   // flag if the log should be enabled (true) or not (false)
   boolean logEnabled_ = false;
@@ -22,7 +22,7 @@ class Logger {
   // parameters:
   //   ntp ... NTP to get time
   //   logEnabled ... flag if the log should be enabled (true) or not (false)
-  Logger(NTP ntp, boolean logEnabled);
+  Logger(NTP& ntp, boolean logEnabled);
 
   // Sets if the log should be enabled (true) or not (false)
   // parameters:

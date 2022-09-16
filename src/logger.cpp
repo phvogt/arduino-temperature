@@ -3,8 +3,9 @@
 #include "LittleFS.h"
 #include "constants.h"
 
-arduino_temp::Logger::Logger(NTP ntp, boolean logEnabled) : ntp_(ntp) {
+arduino_temp::Logger::Logger(NTP& ntp, boolean logEnabled) {
   logEnabled_ = logEnabled;
+  ntp_ = &ntp;
 }
 
 void arduino_temp::Logger::setLogEnabled(boolean logEnabled) {
@@ -12,7 +13,7 @@ void arduino_temp::Logger::setLogEnabled(boolean logEnabled) {
 }
 
 void arduino_temp::Logger::log(String logLevel, String message) {
-  String logLine = ntp_.getDateTime() + " " + String(millis()) + " " +
+  String logLine = ntp_->getDateTime() + " " + String(millis()) + " " +
                    logLevel + ": " + message;
   Serial.println(logLine);
 

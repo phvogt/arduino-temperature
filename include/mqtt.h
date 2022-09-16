@@ -13,21 +13,21 @@ namespace arduino_temp {
 class MQTT {
  private:
   // MQTT configuration
-  MQTTConfig mqttConfig_;
+  MQTTConfig* mqttConfig_;
   // logging
-  Logger logger_;
+  Logger* logger_;
 
   // WIFI client
   WiFiClient mqttNet_;
   // MQTT client
-  MQTTClient mqttClient_;
+  MQTTClient* mqttClient_;
 
  public:
   // Constructor
   // parameters:
   //   mqttConfig ... MQTT configuration
   //   logger ... logging
-  MQTT(MQTTConfig mqttConfig, Logger logger);
+  MQTT(MQTTConfig& mqttConfig, Logger& logger);
 
   // Setups of the MQTT.
   // parameters: none

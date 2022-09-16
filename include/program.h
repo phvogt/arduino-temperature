@@ -19,34 +19,35 @@ namespace arduino_temp {
 class Program {
  private:
   // Configuration
-  Config config_;
+  Config* config_;
 
   // NTP client
-  NTP ntp_;
+  NTP* ntp_;
   // logging
-  Logger logger_;
+  Logger* logger_;
   // File handling
-  FileHandler fileHandler_;
+  FileHandler* fileHandler_;
   // timing
-  Timing timing_;
+  Timing* timing_;
   // MQTT communication
-  MQTT mqtt_;
+  MQTT* mqtt_;
   // Wifi client
-  Wifi wifi_;
+  Wifi* wifi_;
   // Core functions
-  CoreFunctions coreFunctions_;
+  CoreFunctions* coreFunctions_;
   // measurement of temperature / humidity
-  Measure measure_;
+  Measure* measure_;
   // FTP client
-  FTP ftp_;
+  FTP* ftp_;
 
   // milli seconds on start
   unsigned long startMillis_ = 0;
 
  public:
   // Constructor.
-  // parameters: none
-  Program();
+  // parameters:
+  //   config ... configuration
+  Program(Config& config);
 
   // do the setup
   void setup();

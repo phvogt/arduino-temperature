@@ -22,7 +22,7 @@ const int WORK_MODE_PRINT_FILE = 4;
 const int WORK_MODE_FTPUPLOAD = 5;
 
 // constants for communication
-#define BAUDRATE 921600
+#define BAUDRATE 115200
 
 // ---------------------------------------------------
 // MQTT

@@ -23,9 +23,9 @@ namespace arduino_temp {
 class Wifi {
  private:
   // Wifi configuration
-  WifiConfig wifiConfig_;
+  WifiConfig* wifiConfig_;
   // logging
-  Logger logger_;
+  Logger* logger_;
 
   struct RTCDATA rtcData_;
 
@@ -65,7 +65,7 @@ class Wifi {
   // parameters:
   //   wifiConfig ... Wifi configuration
   //   logger ... logging
-  Wifi(WifiConfig wifiConfig, Logger logger);
+  Wifi(WifiConfig& wifiConfig, Logger& logger);
 
   // Initialize WIFI.
   // parameters: none

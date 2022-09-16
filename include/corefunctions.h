@@ -11,17 +11,17 @@ namespace arduino_temp {
 class CoreFunctions {
  private:
   // CoreFunctions configuration
-  CoreFunctionsConfig coreFunctionsConfig_;
+  CoreFunctionsConfig* coreFunctionsConfig_;
 
   // logging
-  Logger logger_;
+  Logger* logger_;
 
  public:
   // Constructor
   // parameters:
   //   coreFunctionsConfig ...CoreFunctions configuration
   //   logger ... logging
-  CoreFunctions(CoreFunctionsConfig coreFunctionsConfig, Logger logger);
+  CoreFunctions(CoreFunctionsConfig& coreFunctionsConfig, Logger& logger);
 
   // Get the reset reason.
   // parameters: none
